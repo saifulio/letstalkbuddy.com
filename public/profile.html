@@ -129,7 +129,7 @@ async function loadProfile() {
                 <h1 style="font-weight:800;font-size:26px;margin:0">${escapeHTML(a.name)}</h1>
                 <span class="verified-badge">✓ ID Verified</span>
               </div>
-              <p style="font-size:15.5px;font-weight:600;margin:0 0 10px" class="muted">${escapeHTML(a.title)} · ${escapeHTML(a.category)}</p>
+              <p style="font-size:15.5px;font-weight:600;margin:0 0 10px" class="muted">${escapeHTML(a.title)} · ${(a.category_path || [a.category]).map(escapeHTML).join(' › ')}</p>
               <div style="display:flex;align-items:center;gap:14px;font-size:14px;flex-wrap:wrap" class="muted">
                 <span style="font-weight:700;color:var(--ink)">★ ${a.rating}</span>
                 <span>${a.reviews_count} reviews</span>

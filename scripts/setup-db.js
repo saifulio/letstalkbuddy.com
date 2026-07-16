@@ -4,6 +4,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
+const { seedCategories } = require('./taxonomy');
 
 async function main() {
   const conn = await mysql.createConnection({
@@ -19,6 +20,9 @@ async function main() {
 
   console.log('Applying schema...');
   await conn.query(schema);
+  console.log('Seeding categories (hierarchical taxonomy)...');
+  await conn.query('USE letstalkbuddy');
+  await seedCategories(conn);
   console.log('Loading sample data...');
   await conn.query(seed);
 

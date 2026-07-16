@@ -9,34 +9,25 @@ const FIRST = ['Ayesha', 'Rahim', 'Nusrat', 'Kamal', 'Sadia', 'Tanvir', 'Mehnaz'
 const LAST = ['Rahman', 'Chowdhury', 'Akter', 'Hossain', 'Islam', 'Khan', 'Ahmed', 'Begum', 'Sarker', 'Uddin',
   'Chen', 'Garcia', 'Petrov', 'Okafor', 'Silva', 'Novak', 'Tanaka', 'Weber', 'Rossi', 'Kim'];
 
-const BIOS = {
-  'Health & Medical': ['Family medicine specialist offering second opinions and health guidance.', 'Nutritionist helping you build sustainable, healthy eating habits.', 'Physiotherapist advising on recovery, posture, and pain management.'],
-  'Legal': ['Corporate lawyer advising startups on contracts and compliance.', 'Family law consultant for sensitive, practical guidance.', 'Property and tenancy law advice for renters and landlords.'],
-  'Tech & Career': ['Senior engineer offering code reviews and system design coaching.', 'Tech recruiter sharing insider tips on interviews and offers.', 'Product manager helping you break into tech roles.'],
-  'Business Mentorship': ['Serial entrepreneur mentoring early-stage founders.', 'E-commerce operator sharing playbooks for online sellers.', 'Finance professional advising on budgeting and business plans.'],
-  'Life Coaching': ['Certified coach for goal-setting, habits, and accountability.', 'Mindfulness practitioner helping with stress and focus.', 'Career transition coach for people at a crossroads.'],
-  'Companionship': ['A friendly, patient listener for whatever is on your mind.', 'Great conversation over coffee — virtually. No judgment, ever.', 'Here to chat about life, culture, and everything in between.'],
-  'Hobbies & Games': ['Chess coach for beginners through club players.', 'Guitar teacher offering song-based, fun lessons.', 'Photography mentor for composition and editing feedback.'],
-};
-
 const LANG_SETS = ['English', 'English,Bangla', 'English,Hindi', 'English,Bangla,Hindi', 'Bangla'];
 
-const TITLES = {
-  'Health & Medical': ['General Physician', 'Nutritionist', 'Physiotherapist', 'Health Consultant'],
-  'Legal': ['Corporate Lawyer', 'Family Law Consultant', 'Property Law Advisor'],
-  'Tech & Career': ['Senior Software Engineer', 'Tech Recruiter', 'Product Manager'],
-  'Business Mentorship': ['Startup Mentor', 'E-commerce Consultant', 'Finance Advisor'],
-  'Life Coaching': ['Certified Life Coach', 'Mindfulness Coach', 'Career Transition Coach'],
-  'Companionship': ['Friendly Listener', 'Conversation Partner'],
-  'Hobbies & Games': ['Chess Coach', 'Guitar Teacher', 'Photography Mentor'],
-};
+const BIO_TEMPLATES = [
+  (c) => `Experienced ${c} with a warm, practical approach. Ask me anything.`,
+  (c) => `${c} sessions tailored to your exact situation — clear, honest, actionable.`,
+  (c) => `Friendly ${c} helping people one conversation at a time.`,
+  (c) => `Seasoned ${c} offering per-minute guidance whenever you need it.`,
+];
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const rand = (min, max) => Math.random() * (max - min) + min;
 
 async function main() {
   const count = Math.max(1, parseInt(process.argv[2], 10) || 20);
-  const [cats] = await pool.query('SELECT id, name FROM categories');
+  // Advisors are only assigned to leaf categories (nodes with no children).
+  const [cats] = await pool.query(`
+    SELECT c.id, c.name FROM categories c
+    LEFT JOIN categories k ON k.parent_id = c.id
+    WHERE k.id IS NULL`);
   if (!cats.length) {
     throw new Error('No categories found. Run "npm run db:setup" first.');
   }
@@ -44,12 +35,12 @@ async function main() {
   const rows = [];
   for (let i = 0; i < count; i++) {
     const cat = pick(cats);
-    const bio = pick(BIOS[cat.name] || ['Experienced advisor ready to help.']);
+    const bio = pick(BIO_TEMPLATES)(cat.name.toLowerCase());
     const reviewsCount = Math.floor(rand(5, 600));
     rows.push([
       `${pick(FIRST)} ${pick(LAST)}`,
       cat.id,
-      pick(TITLES[cat.name] || ['Advisor']),
+      cat.name,
       bio,
       `${bio} With years of hands-on experience in ${cat.name.toLowerCase()}, I keep sessions practical and friendly: tell me what's on your mind, and we'll work through it together — you only pay for the minutes we talk.`,
       Math.round(reviewsCount * rand(2.5, 4.5)),

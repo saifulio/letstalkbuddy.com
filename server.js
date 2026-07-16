@@ -92,13 +92,36 @@ app.get('/api/auth/me', async (req, res) => {
 // ---------- Data ----------
 app.get('/api/categories', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT id, name, color, tag_bg, tag_color FROM categories ORDER BY id');
+    const [rows] = await pool.query('SELECT id, name, parent_id, color, tag_bg, tag_color FROM categories ORDER BY id');
     res.json({ categories: rows });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong.' });
   }
 });
+
+// Expands category ids to include all their descendants (subcategories,
+// sub-subcategories, ...), so filtering by "Professional" matches advisors
+// in "Doctor", "Software Architect", etc.
+async function expandCategoryIds(ids) {
+  const [cats] = await pool.query('SELECT id, parent_id FROM categories');
+  const children = new Map();
+  for (const c of cats) {
+    if (c.parent_id) {
+      if (!children.has(c.parent_id)) children.set(c.parent_id, []);
+      children.get(c.parent_id).push(c.id);
+    }
+  }
+  const out = new Set();
+  const stack = [...ids];
+  while (stack.length) {
+    const id = stack.pop();
+    if (out.has(id)) continue;
+    out.add(id);
+    for (const child of children.get(id) || []) stack.push(child);
+  }
+  return [...out];
+}
 
 app.get('/api/advisors', async (req, res) => {
   try {
@@ -113,8 +136,9 @@ app.get('/api/advisors', async (req, res) => {
     if (req.query.categories) {
       const ids = String(req.query.categories).split(',').map(Number).filter(Number.isInteger);
       if (ids.length) {
-        where.push(`a.category_id IN (${ids.map(() => '?').join(',')})`);
-        params.push(...ids);
+        const expanded = await expandCategoryIds(ids);
+        where.push(`a.category_id IN (${expanded.map(() => '?').join(',')})`);
+        params.push(...expanded);
       }
     }
     if (req.query.online === '1') where.push('a.is_online = 1');
@@ -168,6 +192,16 @@ app.get('/api/advisors/:id', async (req, res) => {
       JOIN categories c ON c.id = a.category_id
       WHERE a.id = ?`, [id]);
     if (!rows[0]) return res.status(404).json({ error: 'Advisor not found.' });
+
+    // Category breadcrumb, e.g. ["Professional", "Lawyer", "Immigration Consultant"]
+    const [cats] = await pool.query('SELECT id, name, parent_id FROM categories');
+    const byId = new Map(cats.map(c => [c.id, c]));
+    const path = [];
+    for (let cur = byId.get(rows[0].category_id); cur; cur = byId.get(cur.parent_id)) {
+      path.unshift(cur.name);
+    }
+    rows[0].category_path = path;
+
     const [reviews] = await pool.query(
       `SELECT author_name, rating, comment, created_at
        FROM reviews WHERE advisor_id = ?

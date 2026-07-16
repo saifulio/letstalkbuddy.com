@@ -29,7 +29,9 @@ node scripts/add-advisors.js 50  # adds 50
 | `server.js` | Express server: static files + REST API (auth, categories, advisor search) |
 | `db.js` | MySQL connection pool |
 | `db/schema.sql` | Database schema (users, categories, advisors, reviews) |
-| `db/seed.sql` | Categories, demo user, and 9 sample advisors |
+| `db/seed.sql` | Demo user and 9 sample advisors |
+| `scripts/taxonomy.js` | Hierarchical category tree (9 top-level groups, subcategories, sub-subcategories) |
+| `scripts/migrate-categories.js` | One-off migration from the old flat categories to the tree |
 | `scripts/setup-db.js` | Applies schema + seed |
 | `scripts/add-advisors.js` | Generates random advisors |
 | `public/index.html` | Landing page (categories + featured advisors from the DB) |
@@ -45,7 +47,7 @@ node scripts/add-advisors.js 50  # adds 50
 - `POST /api/auth/signup` — `{ name, email, password, role }`
 - `POST /api/auth/login` — `{ email, password }`
 - `POST /api/auth/logout`, `GET /api/auth/me`
-- `GET /api/categories`
+- `GET /api/categories` — flat list with `parent_id`; clients build the tree. Filtering by a category includes all of its descendants.
 - `GET /api/advisors?q=&categories=1,2&online=1&minRating=4.5&maxRate=2&language=Bangla&featured=1`
 - `GET /api/advisors/:id` — full profile plus latest reviews
 

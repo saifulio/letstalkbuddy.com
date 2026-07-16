@@ -121,7 +121,7 @@ async function loadLanding() {
       API.get('/api/advisors?featured=1'),
     ]);
 
-    document.getElementById('categories-grid').innerHTML = categories.map(cat => `
+    document.getElementById('categories-grid').innerHTML = categories.filter(c => !c.parent_id).map(cat => `
       <a href="/search.html?category=${cat.id}" style="display:flex;align-items:center;gap:12px;padding:18px 16px;border-radius:14px;background:#FFFDF9;border:1px solid oklch(90% 0.01 60);cursor:pointer;text-decoration:none;color:inherit">
         <div style="width:10px;height:10px;border-radius:50%;background:${cat.color};flex-shrink:0"></div>
         <span style="font-weight:700;font-size:15px">${escapeHTML(cat.name)}</span>

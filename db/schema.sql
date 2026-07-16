@@ -22,9 +22,12 @@ CREATE TABLE users (
 CREATE TABLE categories (
   id        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name      VARCHAR(80) NOT NULL UNIQUE,
+  parent_id INT UNSIGNED NULL,
   color     VARCHAR(40) NOT NULL,
   tag_bg    VARCHAR(40) NOT NULL,
-  tag_color VARCHAR(40) NOT NULL
+  tag_color VARCHAR(40) NOT NULL,
+  CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE CASCADE,
+  INDEX idx_categories_parent (parent_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE advisors (

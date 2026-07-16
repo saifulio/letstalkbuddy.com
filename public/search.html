@@ -7,6 +7,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
+<style>
+  .cat-children { margin-left: 20px; display: none; }
+  .cat-node.open > .cat-children { display: block; }
+  .cat-row { display: flex; align-items: center; gap: 4px; padding: 3px 0; }
+  .cat-toggle {
+    width: 18px; height: 18px;
+    border: none; background: none; padding: 0;
+    font-size: 11px; color: oklch(55% 0.02 60);
+    cursor: pointer; flex-shrink: 0;
+    transition: transform .12s;
+  }
+  .cat-node.open > .cat-row .cat-toggle { transform: rotate(90deg); }
+  .cat-spacer { width: 18px; flex-shrink: 0; }
+  .cat-row .check-row { flex: 1; }
+  .cat-row.top .check-row { font-weight: 700; color: var(--ink); }
+</style>
 </head>
 <body>
 
@@ -31,7 +47,7 @@
 
     <div class="filter-group">
       <div class="filter-title">Category</div>
-      <div style="display:flex;flex-direction:column;gap:9px" id="category-filters"></div>
+      <div id="category-filters"></div>
     </div>
 
     <div class="filter-group">
@@ -113,16 +129,54 @@ async function loadResults() {
 
 async function initFilters() {
   const { categories } = await API.get('/api/categories');
-  document.getElementById('category-filters').innerHTML = categories.map(c => `
-    <label class="check-row">
-      <input type="checkbox" name="category" value="${c.id}" ${state.categories.has(String(c.id)) ? 'checked' : ''}>${escapeHTML(c.name)}
-    </label>`).join('');
 
-  document.querySelectorAll('input[name="category"]').forEach(cb =>
+  const childrenOf = new Map();
+  const parentOf = new Map();
+  for (const c of categories) {
+    parentOf.set(String(c.id), c.parent_id ? String(c.parent_id) : null);
+    if (c.parent_id) {
+      if (!childrenOf.has(c.parent_id)) childrenOf.set(c.parent_id, []);
+      childrenOf.get(c.parent_id).push(c);
+    }
+  }
+
+  function renderNode(c, isTop) {
+    const kids = childrenOf.get(c.id) || [];
+    return `
+      <div class="cat-node" data-id="${c.id}">
+        <div class="cat-row${isTop ? ' top' : ''}">
+          ${kids.length
+            ? `<button type="button" class="cat-toggle" aria-label="Expand ${escapeHTML(c.name)}">▶</button>`
+            : '<span class="cat-spacer"></span>'}
+          <label class="check-row">
+            <input type="checkbox" name="category" value="${c.id}" ${state.categories.has(String(c.id)) ? 'checked' : ''}>${escapeHTML(c.name)}
+          </label>
+        </div>
+        ${kids.length ? `<div class="cat-children">${kids.map(k => renderNode(k, false)).join('')}</div>` : ''}
+      </div>`;
+  }
+
+  const box = document.getElementById('category-filters');
+  box.innerHTML = categories.filter(c => !c.parent_id).map(c => renderNode(c, true)).join('');
+
+  box.querySelectorAll('.cat-toggle').forEach(btn =>
+    btn.addEventListener('click', () => btn.closest('.cat-node').classList.toggle('open')));
+
+  box.querySelectorAll('input[name="category"]').forEach(cb =>
     cb.addEventListener('change', () => {
       cb.checked ? state.categories.add(cb.value) : state.categories.delete(cb.value);
       loadResults();
     }));
+
+  // Expand the tree down to any category preselected via the URL.
+  for (const id of state.categories) {
+    for (let p = parentOf.get(id); p; p = parentOf.get(p)) {
+      const node = box.querySelector(`.cat-node[data-id="${p}"]`);
+      if (node) node.classList.add('open');
+    }
+    const self = box.querySelector(`.cat-node[data-id="${id}"]`);
+    if (self) self.classList.add('open');
+  }
 }
 
 document.getElementById('q').addEventListener('input', debounce(e => {
