@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advisor profile — LetsTalkBuddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  .profile-layout {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 48px;
+    align-items: start;
+  }
+  .verified-badge {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1C7A46;
+    background: oklch(93% 0.05 155);
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .section-title { font-weight: 700; font-size: 18px; margin: 0 0 10px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .gallery-tile {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: oklch(50% 0.03 60);
+    border: 1px solid var(--border);
+  }
+  .review-item { border-bottom: 1px solid var(--border); padding-bottom: 18px; }
+  .booking-card {
+    position: sticky;
+    top: 24px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    background: var(--card);
+  }
+  .booking-row { display: flex; justify-content: space-between; }
+  .booking-row span:last-child { font-weight: 700; color: var(--ink); }
+  @media (max-width: 960px) {
+    .profile-layout { grid-template-columns: 1fr; padding: 24px 20px; }
+    .booking-card { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<div class="search-nav">
+  <a href="/" class="brand" style="font-size:20px;flex-shrink:0">LetsTalk<em>Buddy</em></a>
+  <div style="display:flex;gap:10px;align-items:center">
+    <a href="/search.html" style="font-weight:700;font-size:14px;color:oklch(45% 0.02 60);text-decoration:none;padding:9px 4px">← Back to search</a>
+    <div class="nav-auth" id="nav-auth" style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="padding:9px 18px;font-size:13.5px" onclick="location.href='/login.html'">Log in</button>
+      <button class="btn btn-primary" style="padding:9px 18px;font-size:13.5px" onclick="location.href='/signup.html'">Sign up</button>
+    </div>
+  </div>
+</div>
+
+<div id="profile-root"></div>
+
+<script src="/js/app.js"></script>
+<script>
+const advisorId = Number(new URLSearchParams(location.search).get('id'));
+
+function relativeDate(iso) {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) { const w = Math.floor(days / 7); return `${w} week${w > 1 ? 's' : ''} ago`; }
+  const m = Math.floor(days / 30);
+  return `${m} month${m > 1 ? 's' : ''} ago`;
+}
+
+function stars(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+const GALLERY = [
+  { label: 'clinic photo', hue: 35 },
+  { label: 'credential', hue: 220 },
+  { label: 'session photo', hue: 165 },
+  { label: 'award / press', hue: 300 },
+];
+
+async function loadProfile() {
+  const root = document.getElementById('profile-root');
+  if (!advisorId) {
+    root.innerHTML = '<p class="muted" style="text-align:center;padding:60px">Advisor not found. <a href="/search.html" class="link-accent">Back to search</a></p>';
+    return;
+  }
+  try {
+    const { advisor: a, reviews } = await API.get('/api/advisors/' + advisorId);
+    document.title = `${a.name} — LetsTalkBuddy`;
+
+    const reviewsHTML = reviews.length ? reviews.map(r => `
+      <div class="review-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:700;font-size:14.5px">${escapeHTML(r.author_name || 'Anonymous')}</span>
+          <span style="font-size:13px" class="small-muted">${relativeDate(r.created_at)}</span>
+        </div>
+        <div style="color:#E8603C;font-size:13.5px;margin-bottom:6px">${stars(r.rating)}</div>
+        <p style="font-size:14.5px;line-height:1.6;color:oklch(35% 0.02 60);margin:0">${escapeHTML(r.comment)}</p>
+      </div>`).join('')
+      : '<p class="muted">No reviews yet.</p>';
+
+    root.innerHTML = `
+      <div class="profile-layout">
+        <div>
+          <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:24px">
+            <div style="position:relative;flex-shrink:0">
+              ${avatarHTML(escapeHTML(a.name), 104, !!a.is_online)}
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+                <h1 style="font-weight:800;font-size:26px;margin:0">${escapeHTML(a.name)}</h1>
+                <span class="verified-badge">✓ ID Verified</span>
+              </div>
+              <p style="font-size:15.5px;font-weight:600;margin:0 0 10px" class="muted">${escapeHTML(a.title)} · ${escapeHTML(a.category)}</p>
+              <div style="display:flex;align-items:center;gap:14px;font-size:14px;flex-wrap:wrap" class="muted">
+                <span style="font-weight:700;color:var(--ink)">★ ${a.rating}</span>
+                <span>${a.reviews_count} reviews</span>
+                <span>·</span>
+                <span>~${a.response_minutes} min response</span>
+                <span>·</span>
+                <span>${escapeHTML(String(a.languages).split(',').join(', '))}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:32px">
+            <h2 class="section-title">About</h2>
+            <p style="font-size:15px;line-height:1.7;color:oklch(35% 0.02 60);margin:0">${escapeHTML(a.about || a.bio)}</p>
+          </div>
+
+          <div style="margin-bottom:32px">
+            <h2 class="section-title" style="margin-bottom:12px">Gallery</h2>
+            <div class="gallery-grid">
+              ${GALLERY.map(g => `<div class="gallery-tile" style="background:linear-gradient(135deg, oklch(95% 0.03 ${g.hue}), oklch(90% 0.04 ${g.hue + 40}))">${g.label}</div>`).join('')}
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+              <h2 class="section-title" style="margin:0">Reviews</h2>
+              <span style="font-size:14px;font-weight:700">★ ${a.rating} · ${a.reviews_count} reviews</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:18px">${reviewsHTML}</div>
+          </div>
+        </div>
+
+        <div class="booking-card">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-family:'Figtree',sans-serif;font-weight:800;font-size:24px">${fmtRate(a.rate_per_min)}</span>
+            ${a.is_online
+              ? '<span style="font-size:12.5px;font-weight:700;color:#3E9C5C">● Online now</span>'
+              : '<span style="font-size:12.5px;font-weight:700" class="small-muted">○ Offline</span>'}
+          </div>
+          <p style="font-size:13px;margin:0 0 20px" class="small-muted">Billed per minute. No charge until connected.</p>
+          <button class="btn btn-primary btn-block" style="margin-bottom:10px${a.is_online ? '' : ';opacity:0.5;cursor:not-allowed'}" ${a.is_online ? '' : 'disabled'} onclick="startCall(${a.id})">Call now</button>
+          <button class="btn btn-outline btn-block" style="padding:13px;font-size:14.5px;margin-bottom:20px" onclick="scheduleCall(${a.id})">Schedule for later</button>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px" class="muted">
+            <div class="booking-row"><span>Category</span><span>${escapeHTML(a.category)}</span></div>
+            <div class="booking-row"><span>Languages</span><span>${escapeHTML(String(a.languages).split(',').join(', '))}</span></div>
+            <div class="booking-row"><span>Response time</span><span>~${a.response_minutes} min</span></div>
+            <div class="booking-row"><span>Sessions completed</span><span>${Number(a.sessions_completed).toLocaleString()}</span></div>
+          </div>
+        </div>
+      </div>`;
+  } catch (err) {
+    root.innerHTML = `<p class="muted" style="text-align:center;padding:60px">${escapeHTML(err.message)} — <a href="/search.html" class="link-accent">Back to search</a></p>`;
+  }
+}
+
+async function requireLogin() {
+  const { user } = await API.get('/api/auth/me');
+  if (!user) { window.location.href = '/login.html'; return null; }
+  return user;
+}
+
+async function startCall(id) {
+  if (!await requireLogin()) return;
+  alert('Calling is coming soon! This would start a per-minute call with advisor #' + id + '.');
+}
+
+async function scheduleCall(id) {
+  if (!await requireLogin()) return;
+  alert('Scheduling is coming soon! This would open the booking calendar for advisor #' + id + '.');
+}
+
+loadProfile();
+</script>
+</body>
+</html>

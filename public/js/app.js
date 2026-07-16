@@ -42,12 +42,13 @@ function fmtResponse(min) { return `~${min} min`; }
 
 function advisorCardHTML(a, { withBio = false } = {}) {
   const name = escapeHTML(a.name);
+  const profileUrl = `/profile.html?id=${a.id}`;
   return `
     <div class="card">
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:${withBio ? 12 : 14}px">
-        ${avatarHTML(name, withBio ? 52 : 56, !!a.is_online)}
+        <a href="${profileUrl}" style="text-decoration:none;flex-shrink:0">${avatarHTML(name, withBio ? 52 : 56, !!a.is_online)}</a>
         <div style="min-width:0">
-          <div style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+          <a href="${profileUrl}" style="display:block;font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;text-decoration:none">${name}</a>
           ${withBio
             ? `<div class="tag" style="margin-top:3px;background:${a.tag_bg};color:${a.tag_color}">${escapeHTML(a.category)}</div>`
             : `<div style="font-size:13px;color:oklch(50% 0.02 60)">${escapeHTML(a.category)}</div>`}
@@ -65,10 +66,8 @@ function advisorCardHTML(a, { withBio = false } = {}) {
     </div>`;
 }
 
-async function bookAdvisor(id) {
-  const { user } = await API.get('/api/auth/me');
-  if (!user) { window.location.href = '/login.html'; return; }
-  alert('Booking flow coming soon! You would book advisor #' + id + '.');
+function bookAdvisor(id) {
+  window.location.href = `/profile.html?id=${id}`;
 }
 
 // Swap Login/Signup buttons for the logged-in state.

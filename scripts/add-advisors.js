@@ -21,6 +21,16 @@ const BIOS = {
 
 const LANG_SETS = ['English', 'English,Bangla', 'English,Hindi', 'English,Bangla,Hindi', 'Bangla'];
 
+const TITLES = {
+  'Health & Medical': ['General Physician', 'Nutritionist', 'Physiotherapist', 'Health Consultant'],
+  'Legal': ['Corporate Lawyer', 'Family Law Consultant', 'Property Law Advisor'],
+  'Tech & Career': ['Senior Software Engineer', 'Tech Recruiter', 'Product Manager'],
+  'Business Mentorship': ['Startup Mentor', 'E-commerce Consultant', 'Finance Advisor'],
+  'Life Coaching': ['Certified Life Coach', 'Mindfulness Coach', 'Career Transition Coach'],
+  'Companionship': ['Friendly Listener', 'Conversation Partner'],
+  'Hobbies & Games': ['Chess Coach', 'Guitar Teacher', 'Photography Mentor'],
+};
+
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const rand = (min, max) => Math.random() * (max - min) + min;
 
@@ -34,12 +44,17 @@ async function main() {
   const rows = [];
   for (let i = 0; i < count; i++) {
     const cat = pick(cats);
+    const bio = pick(BIOS[cat.name] || ['Experienced advisor ready to help.']);
+    const reviewsCount = Math.floor(rand(5, 600));
     rows.push([
       `${pick(FIRST)} ${pick(LAST)}`,
       cat.id,
-      pick(BIOS[cat.name] || ['Experienced advisor ready to help.']),
+      pick(TITLES[cat.name] || ['Advisor']),
+      bio,
+      `${bio} With years of hands-on experience in ${cat.name.toLowerCase()}, I keep sessions practical and friendly: tell me what's on your mind, and we'll work through it together — you only pay for the minutes we talk.`,
+      Math.round(reviewsCount * rand(2.5, 4.5)),
       (Math.round(rand(3.8, 5.0) * 10) / 10).toFixed(1),
-      Math.floor(rand(5, 600)),
+      reviewsCount,
       Math.floor(rand(1, 30)),
       (Math.round(rand(0.5, 5.0) * 4) / 4).toFixed(2),
       pick(LANG_SETS),
@@ -49,7 +64,7 @@ async function main() {
 
   await pool.query(
     `INSERT INTO advisors
-       (name, category_id, bio, rating, reviews_count, response_minutes, rate_per_min, languages, is_online)
+       (name, category_id, title, bio, about, sessions_completed, rating, reviews_count, response_minutes, rate_per_min, languages, is_online)
      VALUES ?`,
     [rows]
   );

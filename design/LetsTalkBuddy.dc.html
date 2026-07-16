@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #FFF8F0; }
+    ::placeholder { color: oklch(55% 0.02 60); }
+    input:focus, button:focus, select:focus { outline: 2px solid #E8603C; outline-offset: 1px; }
+  </style>
+  <script type="text/babel" src="./image-slot.js"></script>
+</helmet>
+
+<div style="font-family:'Karla',sans-serif;color:#241C16;background:#FFF8F0;min-height:100vh;width:100%">
+
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+    <div style="width:100%">
+      <!-- NAV -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 48px;max-width:1280px;margin:0 auto">
+        <div onClick="{{ goLanding }}" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:22px;letter-spacing:-0.02em;cursor:pointer">LetsTalk<span style="color:#E8603C">Buddy</span></div>
+        <div style="display:flex;align-items:center;gap:32px">
+          <div style="display:flex;gap:28px;font-size:15px;font-weight:600;color:oklch(45% 0.02 60)">
+            <span>How it works</span>
+            <span>Categories</span>
+            <span>Become an advisor</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <button onClick="{{ goLogin }}" style="padding:10px 20px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:14px;color:#241C16;cursor:pointer">Log in</button>
+            <button onClick="{{ goSignup }}" style="padding:10px 20px;border-radius:10px;border:none;background:#E8603C;font-family:inherit;font-weight:700;font-size:14px;color:#FFF8F0;cursor:pointer">Sign up</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO -->
+      <div style="max-width:1280px;margin:0 auto;padding:64px 48px 40px;display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center">
+        <div>
+          <div style="display:inline-block;padding:6px 14px;border-radius:999px;background:oklch(94% 0.02 60);font-size:13px;font-weight:700;color:#B0472C;margin-bottom:20px">Now live in Bangladesh &amp; worldwide</div>
+          <h1 style="font-family:'Figtree',sans-serif;font-weight:800;font-size:52px;line-height:1.08;letter-spacing:-0.02em;margin:0 0 20px">Real advice, real people, by the minute.</h1>
+          <p style="font-size:19px;line-height:1.6;color:oklch(45% 0.02 60);max-width:480px;margin:0 0 32px">Book a doctor, lawyer, mentor, or just a friendly ear. Set up a call in seconds and pay only for the time you use.</p>
+          <div style="display:flex;gap:14px;margin-bottom:28px">
+            <button onClick="{{ goSearch }}" style="padding:16px 28px;border-radius:12px;border:none;background:#E8603C;font-family:inherit;font-weight:700;font-size:16px;color:#FFF8F0;cursor:pointer">Find someone to talk to</button>
+            <button onClick="{{ goSignup }}" style="padding:16px 28px;border-radius:12px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:16px;color:#241C16;cursor:pointer">Become an advisor</button>
+          </div>
+          <div style="display:flex;gap:24px;font-size:13.5px;color:oklch(50% 0.02 60);font-weight:600">
+            <span>Cards, bKash &amp; Nagad accepted</span>
+            <span>·</span>
+            <span>ID-verified advisors</span>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:24px;overflow:hidden;border:1px solid oklch(88% 0.01 60)">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="hero-photo" shape="rect" placeholder="Drop a hero photo (advisor on a call)" hint-size="100%,100%" style="width:100%;height:100%"></x-import>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div style="max-width:1280px;margin:0 auto;padding:32px 48px 56px">
+        <h2 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:24px;margin:0 0 20px">Browse by category</h2>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="8">
+            <div onClick="{{ goSearch }}" style="display:flex;align-items:center;gap:12px;padding:18px 16px;border-radius:14px;background:#FFFDF9;border:1px solid oklch(90% 0.01 60);cursor:pointer">
+              <div style="width:10px;height:10px;border-radius:50%;background:{{ cat.color }};flex-shrink:0"></div>
+              <span style="font-weight:700;font-size:15px">{{ cat.name }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- HOW IT WORKS -->
+      <div style="background:#FFFDF9;border-top:1px solid oklch(90% 0.01 60);border-bottom:1px solid oklch(90% 0.01 60)">
+        <div style="max-width:1280px;margin:0 auto;padding:56px 48px;display:grid;grid-template-columns:repeat(3,1fr);gap:36px">
+          <div>
+            <div style="font-family:'Figtree',sans-serif;font-weight:800;font-size:32px;color:#E8603C;margin-bottom:10px">1</div>
+            <h3 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px">Search &amp; compare</h3>
+            <p style="font-size:15px;line-height:1.6;color:oklch(45% 0.02 60);margin:0">Filter by category, price, language, and rating to find the right person.</p>
+          </div>
+          <div>
+            <div style="font-family:'Figtree',sans-serif;font-weight:800;font-size:32px;color:#E8603C;margin-bottom:10px">2</div>
+            <h3 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px">Book instantly or schedule</h3>
+            <p style="font-size:15px;line-height:1.6;color:oklch(45% 0.02 60);margin:0">Call an advisor who's online now, or reserve a time that works for both of you.</p>
+          </div>
+          <div>
+            <div style="font-family:'Figtree',sans-serif;font-weight:800;font-size:32px;color:#E8603C;margin-bottom:10px">3</div>
+            <h3 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:19px;margin:0 0 8px">Pay by the minute</h3>
+            <p style="font-size:15px;line-height:1.6;color:oklch(45% 0.02 60);margin:0">A live timer tracks the cost. You're only ever charged for time spent talking.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEATURED ADVISORS -->
+      <div style="max-width:1280px;margin:0 auto;padding:56px 48px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px">
+          <h2 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:24px;margin:0">Popular advisors this week</h2>
+          <span onClick="{{ goSearch }}" style="font-weight:700;font-size:14px;color:#E8603C;cursor:pointer">See all →</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+          <sc-for list="{{ featuredAdvisors }}" as="adv" hint-placeholder-count="4">
+            <div style="border:1px solid oklch(90% 0.01 60);border-radius:16px;padding:20px;background:#FFFDF9">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+                <div onClick="{{ goProfile }}" style="width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;cursor:pointer">
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ adv.slotId }}" shape="circle" placeholder="photo" hint-size="56px,56px" style="width:56px;height:56px"></x-import>
+                  <sc-if value="{{ adv.online }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;bottom:0;right:0;width:13px;height:13px;border-radius:50%;background:#3E9C5C;border:2px solid #FFFDF9"></div>
+                  </sc-if>
+                </div>
+                <div>
+                  <div onClick="{{ goProfile }}" style="font-weight:700;font-size:15px;cursor:pointer">{{ adv.name }}</div>
+                  <div style="font-size:13px;color:oklch(50% 0.02 60)">{{ adv.category }}</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:oklch(45% 0.02 60);margin-bottom:14px">
+                <span>★ {{ adv.rating }} · {{ adv.responseTime }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-weight:800;font-size:16px">{{ adv.rate }}</span>
+                <button onClick="{{ goProfile }}" style="padding:8px 14px;border-radius:8px;border:none;background:#241C16;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer">Book</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div style="border-top:1px solid oklch(90% 0.01 60);padding:48px 48px 32px">
+        <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:32px;margin-bottom:32px">
+          <div>
+            <div style="font-family:'Figtree',sans-serif;font-weight:800;font-size:19px;margin-bottom:10px">LetsTalk<span style="color:#E8603C">Buddy</span></div>
+            <p style="font-size:13.5px;line-height:1.6;color:oklch(50% 0.02 60);max-width:260px">A marketplace for paid, per-minute conversations — expert advice, mentorship, or just companionship.</p>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13.5px;margin-bottom:12px">Company</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:oklch(50% 0.02 60)"><span>About</span><span>Careers</span><span>Blog</span></div>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13.5px;margin-bottom:12px">For advisors</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:oklch(50% 0.02 60)"><span>Become an advisor</span><span>Advisor resources</span></div>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13.5px;margin-bottom:12px">Support</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:oklch(50% 0.02 60)"><span>Help center</span><span>Trust &amp; safety</span></div>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13.5px;margin-bottom:12px">Legal</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:oklch(50% 0.02 60)"><span>Terms</span><span>Privacy</span></div>
+          </div>
+        </div>
+        <div style="max-width:1280px;margin:0 auto;padding-top:24px;border-top:1px solid oklch(90% 0.01 60);font-size:12.5px;color:oklch(55% 0.02 60);line-height:1.6">
+          © 2026 LetsTalkBuddy. Advice provided through the platform is not a substitute for licensed professional medical, legal, or mental-health services.
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 24px">
+      <div onClick="{{ goLanding }}" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:22px;margin-bottom:40px;cursor:pointer">LetsTalk<span style="color:#E8603C">Buddy</span></div>
+      <div style="width:100%;max-width:440px;background:#FFFDF9;border:1px solid oklch(90% 0.01 60);border-radius:20px;padding:36px">
+        <h1 style="font-family:'Figtree',sans-serif;font-weight:800;font-size:26px;margin:0 0 8px">Create your account</h1>
+        <p style="font-size:14.5px;color:oklch(45% 0.02 60);margin:0 0 24px">Join as a seeker, an advisor, or both.</p>
+
+        <div style="display:flex;gap:8px;padding:4px;border-radius:12px;background:oklch(94% 0.015 60);margin-bottom:24px">
+          <div onClick="{{ selectSeeker }}" style="{{ seekerTabStyle }}">I'm looking for advice</div>
+          <div onClick="{{ selectAdvisor }}" style="{{ advisorTabStyle }}">I want to offer advice</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">
+          <div>
+            <label style="font-size:13px;font-weight:700;margin-bottom:6px;display:block">Full name</label>
+            <input type="text" placeholder="Your name" style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);font-family:inherit;font-size:14.5px;background:#FFF"></input>
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:700;margin-bottom:6px;display:block">Email or phone number</label>
+            <input type="text" placeholder="you@example.com" style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);font-family:inherit;font-size:14.5px;background:#FFF"></input>
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:700;margin-bottom:6px;display:block">Password</label>
+            <input type="password" placeholder="Create a password" style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);font-family:inherit;font-size:14.5px;background:#FFF"></input>
+          </div>
+        </div>
+
+        <button style="width:100%;padding:14px;border-radius:10px;border:none;background:#E8603C;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:16px">Create account</button>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="flex:1;height:1px;background:oklch(88% 0.01 60)"></div>
+          <span style="font-size:12.5px;color:oklch(55% 0.02 60)">or</span>
+          <div style="flex:1;height:1px;background:oklch(88% 0.01 60)"></div>
+        </div>
+
+        <button style="width:100%;padding:13px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;margin-bottom:20px">Continue with Google</button>
+
+        <p style="font-size:12px;color:oklch(55% 0.02 60);line-height:1.6;text-align:center;margin:0 0 20px">By continuing you agree to LetsTalkBuddy's Terms of Service and Privacy Policy.</p>
+
+        <p style="font-size:14px;text-align:center;margin:0;color:oklch(45% 0.02 60)">Already have an account? <span onClick="{{ goLogin }}" style="color:#E8603C;font-weight:700;cursor:pointer">Log in</span></p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 24px">
+      <div onClick="{{ goLanding }}" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:22px;margin-bottom:40px;cursor:pointer">LetsTalk<span style="color:#E8603C">Buddy</span></div>
+      <div style="width:100%;max-width:420px;background:#FFFDF9;border:1px solid oklch(90% 0.01 60);border-radius:20px;padding:36px">
+        <h1 style="font-family:'Figtree',sans-serif;font-weight:800;font-size:26px;margin:0 0 8px">Welcome back</h1>
+        <p style="font-size:14.5px;color:oklch(45% 0.02 60);margin:0 0 24px">Log in to continue your conversations.</p>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:12px">
+          <div>
+            <label style="font-size:13px;font-weight:700;margin-bottom:6px;display:block">Email or phone number</label>
+            <input type="text" placeholder="you@example.com" style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);font-family:inherit;font-size:14.5px;background:#FFF"></input>
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:700;margin-bottom:6px;display:block">Password</label>
+            <input type="password" placeholder="Your password" style="width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);font-family:inherit;font-size:14.5px;background:#FFF"></input>
+          </div>
+        </div>
+
+        <div style="text-align:right;margin-bottom:20px">
+          <span style="font-size:13px;font-weight:700;color:#E8603C;cursor:pointer">Forgot password?</span>
+        </div>
+
+        <button style="width:100%;padding:14px;border-radius:10px;border:none;background:#E8603C;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:16px">Log in</button>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="flex:1;height:1px;background:oklch(88% 0.01 60)"></div>
+          <span style="font-size:12.5px;color:oklch(55% 0.02 60)">or</span>
+          <div style="flex:1;height:1px;background:oklch(88% 0.01 60)"></div>
+        </div>
+
+        <button style="width:100%;padding:13px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;margin-bottom:20px">Continue with Google</button>
+
+        <p style="font-size:14px;text-align:center;margin:0;color:oklch(45% 0.02 60)">New to LetsTalkBuddy? <span onClick="{{ goSignup }}" style="color:#E8603C;font-weight:700;cursor:pointer">Sign up</span></p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+    <div style="width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid oklch(90% 0.01 60)">
+        <div onClick="{{ goLanding }}" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:20px;cursor:pointer">LetsTalk<span style="color:#E8603C">Buddy</span></div>
+        <div style="display:flex;gap:10px">
+          <span onClick="{{ goSearch }}" style="font-weight:700;font-size:14px;color:oklch(45% 0.02 60);cursor:pointer;padding:9px 4px">← Back to search</span>
+          <button onClick="{{ goLogin }}" style="padding:9px 18px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer">Log in</button>
+          <button onClick="{{ goSignup }}" style="padding:9px 18px;border-radius:10px;border:none;background:#E8603C;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer">Sign up</button>
+        </div>
+      </div>
+
+      <div style="max-width:1120px;margin:0 auto;padding:40px 48px;display:grid;grid-template-columns:1fr 320px;gap:48px;align-items:start">
+        <div>
+          <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:24px">
+            <div style="width:104px;height:104px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative">
+              <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="profile-main-photo" shape="circle" placeholder="profile photo" hint-size="104px,104px" style="width:104px;height:104px"></x-import>
+              <div style="position:absolute;bottom:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#3E9C5C;border:3px solid #FFF8F0"></div>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+                <h1 style="font-family:'Figtree',sans-serif;font-weight:800;font-size:26px;margin:0">{{ profile.name }}</h1>
+                <span style="font-size:12px;font-weight:700;color:#1C7A46;background:oklch(93% 0.05 155);padding:3px 10px;border-radius:999px">✓ ID Verified</span>
+              </div>
+              <p style="font-size:15.5px;font-weight:600;color:oklch(45% 0.02 60);margin:0 0 10px">{{ profile.title }}</p>
+              <div style="display:flex;align-items:center;gap:14px;font-size:14px;color:oklch(45% 0.02 60)">
+                <span style="font-weight:700;color:#241C16">★ {{ profile.rating }}</span>
+                <span>{{ profile.reviewCount }} reviews</span>
+                <span>·</span>
+                <span>{{ profile.responseTime }} response</span>
+                <span>·</span>
+                <span>{{ profile.languages }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:32px">
+            <h2 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:18px;margin:0 0 10px">About</h2>
+            <p style="font-size:15px;line-height:1.7;color:oklch(35% 0.02 60);margin:0">{{ profile.about }}</p>
+          </div>
+
+          <div style="margin-bottom:32px">
+            <h2 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:18px;margin:0 0 12px">Gallery</h2>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              <sc-for list="{{ profile.gallery }}" as="g" hint-placeholder-count="4">
+                <div style="aspect-ratio:1;border-radius:12px;overflow:hidden">
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ g.id }}" shape="rounded" radius="12" placeholder="{{ g.label }}" hint-size="100%,100%" style="width:100%;height:100%"></x-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+              <h2 style="font-family:'Figtree',sans-serif;font-weight:700;font-size:18px;margin:0">Reviews</h2>
+              <span style="font-size:14px;font-weight:700;color:#241C16">★ {{ profile.rating }} · {{ profile.reviewCount }} reviews</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <sc-for list="{{ profile.reviews }}" as="rev" hint-placeholder-count="3">
+                <div style="border-bottom:1px solid oklch(90% 0.01 60);padding-bottom:18px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <span style="font-weight:700;font-size:14.5px">{{ rev.author }}</span>
+                    <span style="font-size:13px;color:oklch(55% 0.02 60)">{{ rev.date }}</span>
+                  </div>
+                  <div style="color:#E8603C;font-size:13.5px;margin-bottom:6px">{{ rev.stars }}</div>
+                  <p style="font-size:14.5px;line-height:1.6;color:oklch(35% 0.02 60);margin:0">{{ rev.text }}</p>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="position:sticky;top:24px;border:1px solid oklch(90% 0.01 60);border-radius:16px;padding:24px;background:#FFFDF9">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-family:'Figtree',sans-serif;font-weight:800;font-size:24px">{{ profile.rate }}</span>
+            <span style="font-size:12.5px;font-weight:700;color:#3E9C5C">● Online now</span>
+          </div>
+          <p style="font-size:13px;color:oklch(50% 0.02 60);margin:0 0 20px">Billed per minute. No charge until connected.</p>
+          <button style="width:100%;padding:14px;border-radius:10px;border:none;background:#E8603C;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:10px">Call now</button>
+          <button style="width:100%;padding:13px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;margin-bottom:20px">Schedule for later</button>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:oklch(45% 0.02 60)">
+            <div style="display:flex;justify-content:space-between"><span>Category</span><span style="font-weight:700;color:#241C16">{{ profile.category }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Languages</span><span style="font-weight:700;color:#241C16">{{ profile.languages }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Response time</span><span style="font-weight:700;color:#241C16">{{ profile.responseTime }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>Sessions completed</span><span style="font-weight:700;color:#241C16">{{ profile.sessions }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+    <div style="width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid oklch(90% 0.01 60)">
+        <div onClick="{{ goLanding }}" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:20px;cursor:pointer;flex-shrink:0">LetsTalk<span style="color:#E8603C">Buddy</span></div>
+        <input type="text" placeholder="Search by name, category, or keyword" style="flex:1;max-width:520px;margin:0 32px;padding:11px 16px;border-radius:999px;border:1.5px solid oklch(85% 0.01 60);font-family:inherit;font-size:14px;background:#FFFDF9"></input>
+        <div style="display:flex;gap:10px;flex-shrink:0">
+          <button onClick="{{ goLogin }}" style="padding:9px 18px;border-radius:10px;border:1.5px solid oklch(85% 0.01 60);background:transparent;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer">Log in</button>
+          <button onClick="{{ goSignup }}" style="padding:9px 18px;border-radius:10px;border:none;background:#E8603C;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer">Sign up</button>
+        </div>
+      </div>
+
+      <div style="max-width:1400px;margin:0 auto;padding:32px 48px;display:grid;grid-template-columns:240px 1fr;gap:36px">
+        <div>
+          <h1 style="font-family:'Figtree',sans-serif;font-weight:800;font-size:22px;margin:0 0 4px">Find an advisor</h1>
+          <p style="font-size:13.5px;color:oklch(50% 0.02 60);margin:0 0 24px">128 advisors match your search</p>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;background:#FFFDF9;border:1px solid oklch(90% 0.01 60);margin-bottom:20px">
+            <span style="font-weight:700;font-size:14px">Online now</span>
+            <div style="width:36px;height:20px;border-radius:999px;background:#E8603C;position:relative"><div style="width:16px;height:16px;border-radius:50%;background:#FFF;position:absolute;top:2px;right:2px"></div></div>
+          </div>
+
+          <div style="margin-bottom:22px">
+            <div style="font-weight:700;font-size:14px;margin-bottom:10px">Category</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="7">
+                <label style="display:flex;align-items:center;gap:9px;font-size:14px;color:oklch(40% 0.02 60);cursor:pointer">
+                  <input type="checkbox"></input>{{ cat.name }}
+                </label>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="margin-bottom:22px">
+            <div style="font-weight:700;font-size:14px;margin-bottom:10px">Price per minute</div>
+            <div style="height:4px;border-radius:2px;background:oklch(88% 0.01 60);position:relative;margin-bottom:8px">
+              <div style="position:absolute;left:15%;right:35%;top:0;bottom:0;background:#E8603C;border-radius:2px"></div>
+              <div style="position:absolute;left:15%;top:-6px;width:16px;height:16px;border-radius:50%;background:#FFF;border:2px solid #E8603C"></div>
+              <div style="position:absolute;left:65%;top:-6px;width:16px;height:16px;border-radius:50%;background:#FFF;border:2px solid #E8603C"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;color:oklch(50% 0.02 60)"><span>$0.50/min</span><span>$5.00/min</span></div>
+          </div>
+
+          <div style="margin-bottom:22px">
+            <div style="font-weight:700;font-size:14px;margin-bottom:10px">Language</div>
+            <div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:oklch(40% 0.02 60)">
+              <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox"></input>English</label>
+              <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox"></input>Bangla</label>
+              <label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox"></input>Hindi</label>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:10px">Minimum rating</div>
+            <div style="display:flex;gap:8px">
+              <div style="padding:7px 12px;border-radius:8px;background:#241C16;color:#FFF;font-size:13px;font-weight:700">4.5+</div>
+              <div style="padding:7px 12px;border-radius:8px;background:transparent;border:1.5px solid oklch(85% 0.01 60);font-size:13px;font-weight:700">4.0+</div>
+              <div style="padding:7px 12px;border-radius:8px;background:transparent;border:1.5px solid oklch(85% 0.01 60);font-size:13px;font-weight:700">Any</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-content:start">
+          <sc-for list="{{ searchAdvisors }}" as="adv" hint-placeholder-count="9">
+            <div style="border:1px solid oklch(90% 0.01 60);border-radius:16px;padding:20px;background:#FFFDF9">
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+                <div onClick="{{ goProfile }}" style="width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative;cursor:pointer">
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="{{ adv.slotId }}" shape="circle" placeholder="photo" hint-size="52px,52px" style="width:52px;height:52px"></x-import>
+                  <sc-if value="{{ adv.online }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;bottom:0;right:0;width:12px;height:12px;border-radius:50%;background:#3E9C5C;border:2px solid #FFFDF9"></div>
+                  </sc-if>
+                </div>
+                <div style="min-width:0">
+                  <div onClick="{{ goProfile }}" style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer">{{ adv.name }}</div>
+                  <div style="font-size:12.5px;padding:2px 8px;border-radius:999px;display:inline-block;margin-top:3px;background:{{ adv.tagBg }};color:{{ adv.tagColor }};font-weight:700">{{ adv.category }}</div>
+                </div>
+              </div>
+              <p style="font-size:13px;line-height:1.5;color:oklch(45% 0.02 60);margin:0 0 12px;min-height:38px">{{ adv.bio }}</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:oklch(45% 0.02 60);margin-bottom:14px">
+                <span>★ {{ adv.rating }} ({{ adv.reviews }})</span>
+                <span>{{ adv.responseTime }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-weight:800;font-size:15.5px">{{ adv.rate }}</span>
+                <button onClick="{{ goProfile }}" style="padding:8px 14px;border-radius:8px;border:none;background:#241C16;color:#FFF8F0;font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer">Book now</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CATEGORIES = [
+  { name: 'Health & Medical', color: '#E8603C' },
+  { name: 'Legal', color: 'oklch(64% 0.14 260)' },
+  { name: 'Tech & Career', color: 'oklch(64% 0.14 220)' },
+  { name: 'Business Mentorship', color: 'oklch(64% 0.14 90)' },
+  { name: 'Life Coaching', color: 'oklch(64% 0.14 165)' },
+  { name: 'Companionship', color: 'oklch(64% 0.14 15)' },
+  { name: 'Hobbies & Games', color: 'oklch(64% 0.14 300)' },
+];
+
+const FEATURED = [
+  { name: 'Dr. Ayesha Rahman', category: 'Health & Medical', rating: '4.9', responseTime: '~2 min reply', rate: '$2.50/min', online: true, slotId: 'feat-1' },
+  { name: 'James Whitfield', category: 'Legal', rating: '4.8', responseTime: '~10 min reply', rate: '$4.00/min', online: false, slotId: 'feat-2' },
+  { name: 'Marcus Chen', category: 'Tech & Career', rating: '5.0', responseTime: '~1 min reply', rate: '$1.80/min', online: true, slotId: 'feat-3' },
+  { name: 'Fatima Noor', category: 'Life Coaching', rating: '4.9', responseTime: '~5 min reply', rate: '$1.50/min', online: false, slotId: 'feat-4' },
+];
+
+const TAG_COLORS = {
+  'Health & Medical': ['oklch(94% 0.03 35)', '#B0472C'],
+  'Legal': ['oklch(94% 0.03 260)', 'oklch(45% 0.12 260)'],
+  'Tech & Career': ['oklch(94% 0.03 220)', 'oklch(45% 0.12 220)'],
+  'Business Mentorship': ['oklch(94% 0.03 90)', 'oklch(45% 0.12 90)'],
+  'Life Coaching': ['oklch(94% 0.03 165)', 'oklch(42% 0.1 165)'],
+  'Companionship': ['oklch(94% 0.03 15)', 'oklch(45% 0.12 15)'],
+  'Hobbies & Games': ['oklch(94% 0.03 300)', 'oklch(45% 0.12 300)'],
+};
+
+const SEARCH_RESULTS = [
+  { name: 'Dr. Ayesha Rahman', category: 'Health & Medical', bio: 'General physician, 12 yrs experience. Second opinions & wellness advice.', rating: '4.9', reviews: 312, responseTime: '~2 min', rate: '$2.50/min', online: true, slotId: 'sr-1' },
+  { name: 'James Whitfield', category: 'Legal', bio: 'Contract & immigration law consultations for individuals and startups.', rating: '4.8', reviews: 201, responseTime: '~10 min', rate: '$4.00/min', online: false, slotId: 'sr-2' },
+  { name: 'Marcus Chen', category: 'Tech & Career', bio: 'Ex-FAANG engineer. Resume reviews, interview prep, career pivots.', rating: '5.0', reviews: 458, responseTime: '~1 min', rate: '$1.80/min', online: true, slotId: 'sr-3' },
+  { name: 'Fatima Noor', category: 'Life Coaching', bio: 'Certified coach helping with habits, focus, and life transitions.', rating: '4.9', reviews: 176, responseTime: '~5 min', rate: '$1.50/min', online: false, slotId: 'sr-4' },
+  { name: 'Rashed Karim', category: 'Business Mentorship', bio: 'Startup founder turned advisor. Fundraising & go-to-market strategy.', rating: '4.7', reviews: 89, responseTime: '~15 min', rate: '$3.20/min', online: true, slotId: 'sr-5' },
+  { name: 'Priya Sharma', category: 'Companionship', bio: 'A warm, friendly ear for whenever you need to talk something through.', rating: '4.9', reviews: 540, responseTime: '~1 min', rate: '$0.80/min', online: true, slotId: 'sr-6' },
+  { name: 'Dr. Naveed Islam', category: 'Health & Medical', bio: 'Psychiatrist offering supportive, judgment-free mental health sessions.', rating: '5.0', reviews: 233, responseTime: '~8 min', rate: '$3.50/min', online: false, slotId: 'sr-7' },
+  { name: 'Tomas Brennan', category: 'Hobbies & Games', bio: 'FIDE-rated chess coach. Openings, endgames, and live game reviews.', rating: '4.8', reviews: 122, responseTime: '~20 min', rate: '$1.20/min', online: true, slotId: 'sr-8' },
+  { name: 'Laila Ahsan', category: 'Life Coaching', bio: 'Career & relationship coaching in English and Bangla.', rating: '4.9', reviews: 97, responseTime: '~3 min', rate: '$1.60/min', online: false, slotId: 'sr-9' },
+];
+
+const PROFILE = {
+  name: 'Dr. Ayesha Rahman',
+  title: 'General Physician · Health & Medical',
+  category: 'Health & Medical',
+  rating: '4.9',
+  reviewCount: 312,
+  responseTime: '~2 min',
+  languages: 'English, Bangla',
+  rate: '$2.50/min',
+  sessions: '1,240',
+  about: "I'm a licensed general physician with 12 years of clinical experience, now offering second opinions, symptom guidance, and general wellness consultations over voice and chat. I keep things clear and judgment-free — bring your questions, reports, or just a nagging worry you want to talk through.",
+  gallery: [
+    { id: 'gal-1', label: 'clinic photo' },
+    { id: 'gal-2', label: 'credential' },
+    { id: 'gal-3', label: 'session photo' },
+    { id: 'gal-4', label: 'award / press' },
+  ],
+  reviews: [
+    { author: 'Nusrat H.', date: '2 days ago', stars: '★★★★★', text: 'Incredibly patient and thorough. Explained my lab results in plain language and put my mind at ease.' },
+    { author: 'Michael O.', date: '1 week ago', stars: '★★★★★', text: 'Quick to connect and genuinely knowledgeable. Worth every minute.' },
+    { author: 'Farzana A.', date: '3 weeks ago', stars: '★★★★☆', text: 'Great second opinion before a procedure. Would have liked a slightly longer call, but very helpful.' },
+  ],
+};
+
+class Component extends DCLogic {
+  state = { page: 'landing', role: 'seeker' };
+
+  renderVals() {
+    const page = this.state.page;
+    const tabBase = 'flex:1;text-align:center;padding:10px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;';
+    return {
+      isLanding: page === 'landing',
+      isSignup: page === 'signup',
+      isLogin: page === 'login',
+      isSearch: page === 'search',
+      isProfile: page === 'profile',
+      profile: PROFILE,
+      goLanding: () => this.setState({ page: 'landing' }),
+      goSignup: () => this.setState({ page: 'signup' }),
+      goLogin: () => this.setState({ page: 'login' }),
+      goSearch: () => this.setState({ page: 'search' }),
+      goProfile: () => this.setState({ page: 'profile' }),
+      selectSeeker: () => this.setState({ role: 'seeker' }),
+      selectAdvisor: () => this.setState({ role: 'advisor' }),
+      seekerTabStyle: tabBase + (this.state.role === 'seeker' ? 'background:#FFF;color:#241C16;box-shadow:0 1px 3px rgba(0,0,0,0.08)' : 'background:transparent;color:oklch(50% 0.02 60)'),
+      advisorTabStyle: tabBase + (this.state.role === 'advisor' ? 'background:#FFF;color:#241C16;box-shadow:0 1px 3px rgba(0,0,0,0.08)' : 'background:transparent;color:oklch(50% 0.02 60)'),
+      categories: CATEGORIES,
+      featuredAdvisors: FEATURED,
+      searchAdvisors: SEARCH_RESULTS.map(a => ({ ...a, tagBg: TAG_COLORS[a.category][0], tagColor: TAG_COLORS[a.category][1] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

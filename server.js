@@ -156,6 +156,29 @@ app.get('/api/advisors', async (req, res) => {
   }
 });
 
+app.get('/api/advisors/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(404).json({ error: 'Advisor not found.' });
+  try {
+    const [rows] = await pool.query(`
+      SELECT a.id, a.name, a.title, a.bio, a.about, a.sessions_completed, a.rating,
+             a.reviews_count, a.response_minutes, a.rate_per_min, a.languages, a.is_online,
+             c.id AS category_id, c.name AS category, c.tag_bg, c.tag_color
+      FROM advisors a
+      JOIN categories c ON c.id = a.category_id
+      WHERE a.id = ?`, [id]);
+    if (!rows[0]) return res.status(404).json({ error: 'Advisor not found.' });
+    const [reviews] = await pool.query(
+      `SELECT author_name, rating, comment, created_at
+       FROM reviews WHERE advisor_id = ?
+       ORDER BY created_at DESC LIMIT 20`, [id]);
+    res.json({ advisor: rows[0], reviews });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`LetsTalkBuddy running at http://localhost:${PORT}`);
 });
