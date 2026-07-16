@@ -38,6 +38,9 @@ node scripts/add-advisors.js 50  # adds 50
 | `public/signup.html`, `public/login.html` | Auth pages (bcrypt + sessions) |
 | `public/search.html` | Advisor search with live filters (category, price, language, rating, online) |
 | `public/profile.html` | Advisor profile: about, gallery, reviews, sticky booking sidebar |
+| `public/settings.html` | Settings → Availability: weekly hours per day, date overrides with calendar, booking preferences, dark mode |
+| `availability.js` | Computes live online status from schedule rules and manual overrides |
+| `scripts/migrate-availability.js` | One-off migration adding availability tables/columns |
 | `scripts/migrate-profile.js` | One-off migration adding profile fields to an existing database |
 | `public/css/style.css`, `public/js/app.js` | Shared styles and helpers |
 | `public/LetsTalkBuddy.dc.html` | Original design comp (kept for reference; not used by the app) |
@@ -50,6 +53,11 @@ node scripts/add-advisors.js 50  # adds 50
 - `GET /api/categories` — flat list with `parent_id`; clients build the tree. Filtering by a category includes all of its descendants.
 - `GET /api/advisors?q=&categories=1,2&online=1&minRating=4.5&maxRate=2&language=Bangla&featured=1`
 - `GET /api/advisors/:id` — full profile plus latest reviews
+- `GET /api/availability` — status, weekly hours per day, date overrides, booking settings (auth required)
+- `PUT /api/availability/weekly` — replace the weekly schedule
+- `POST /api/availability/overrides`, `DELETE /api/availability/overrides/:date` — date-specific hours / unavailable days
+- `PUT /api/availability/settings` — buffers, limits, booking preferences, timezone
+- `POST`/`DELETE /api/availability/override` — go online/offline for N hours / resume schedule
 
 ---
 

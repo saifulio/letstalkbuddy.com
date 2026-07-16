@@ -9,6 +9,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'letstalkbuddy',
   waitForConnections: true,
   connectionLimit: 10,
+  dateStrings: ['DATE'], // DATE columns come back as 'YYYY-MM-DD'
 });
 
 module.exports = pool;

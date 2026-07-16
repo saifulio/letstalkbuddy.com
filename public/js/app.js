@@ -78,7 +78,7 @@ async function initAuthNav() {
     const { user } = await API.get('/api/auth/me');
     if (user) {
       slot.innerHTML = `
-        <span style="font-weight:700;font-size:14px">Hi, ${escapeHTML(user.name.split(' ')[0])}</span>
+        <a href="/settings.html" style="font-weight:700;font-size:14px;color:inherit;text-decoration:none">Hi, ${escapeHTML(user.name.split(' ')[0])} ⚙</a>
         <button class="btn btn-outline" id="logout-btn" style="padding:9px 18px;font-size:13.5px">Log out</button>`;
       document.getElementById('logout-btn').addEventListener('click', async () => {
         await API.post('/api/auth/logout');

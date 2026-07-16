@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Availability — LetsTalkBuddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --accent: #E8603C;
+    --bg: #FFFFFF; --sidebar: #FAFAF8; --ink: #1C1A16;
+    --muted: oklch(50% 0.01 60); --border: oklch(90% 0.01 60);
+    --chip: oklch(96% 0.005 60); --hover: oklch(97% 0.005 60);
+    --card: #FFFFFF; --card-shadow: 0 2px 10px rgba(20,20,10,0.04);
+    --cal-bg: oklch(98% 0.005 60); --seg-active: #FFFFFF;
+  }
+  body.dark {
+    --bg: #15130F; --sidebar: #1B1913; --ink: #F5F1E9;
+    --muted: oklch(70% 0.01 60); --border: oklch(30% 0.01 60);
+    --chip: oklch(24% 0.01 60); --hover: oklch(22% 0.01 60);
+    --card: #1B1913; --card-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    --cal-bg: oklch(24% 0.01 60); --seg-active: #2A2721;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    transition: background .2s, color .2s;
+  }
+  ::placeholder { color: oklch(60% 0.01 60); }
+  button, input, select { font-family: 'Inter', sans-serif; }
+  input:focus, button:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 232px; flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+    height: 100vh; position: sticky; top: 0;
+  }
+  .side-logo { display: flex; align-items: center; gap: 10px; padding: 8px 10px 20px; cursor: pointer; text-decoration: none; color: var(--ink); }
+  .side-logo .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); flex-shrink: 0; }
+  .side-logo span { font-weight: 800; font-size: 15.5px; letter-spacing: -0.01em; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 10px;
+    cursor: pointer; color: var(--muted);
+    font-weight: 600; font-size: 14px;
+  }
+  .nav-item.active { color: var(--accent); background: var(--chip); }
+  .nav-item:not(.active):hover { background: var(--hover); }
+  .side-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 10px 6px; border-top: 1px solid var(--border);
+  }
+  .side-bottom span { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+  /* Switch */
+  .switch {
+    width: 36px; height: 20px; border-radius: 999px;
+    position: relative; cursor: pointer; flex-shrink: 0;
+    transition: background .15s; background: var(--border);
+  }
+  .switch::after {
+    content: ''; width: 16px; height: 16px; border-radius: 50%;
+    background: #FFF; position: absolute; top: 2px; left: 2px;
+    transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .switch.on { background: var(--accent); }
+  .switch.on::after { left: 18px; }
+
+  /* Main */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .page-header {
+    padding: 22px 40px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg); position: sticky; top: 0; z-index: 5;
+  }
+  .page-header .crumb { font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .page-header h1 { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+  .header-right { display: flex; align-items: center; gap: 12px; position: relative; }
+  .status-pill {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--chip);
+    font-size: 13px; font-weight: 700; cursor: pointer; user-select: none;
+  }
+  .status-pill .dot { width: 9px; height: 9px; border-radius: 50%; background: oklch(70% 0.01 60); }
+  .status-pill.online .dot { background: #3E9C5C; }
+  .status-menu {
+    position: absolute; top: 46px; right: 48px; z-index: 20;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 6px; min-width: 190px; display: none;
+  }
+  .status-menu.open { display: block; }
+  .status-menu button {
+    display: block; width: 100%; text-align: left;
+    padding: 9px 12px; border: none; background: transparent; border-radius: 8px;
+    font-size: 13.5px; font-weight: 600; color: var(--ink); cursor: pointer;
+  }
+  .status-menu button:hover { background: var(--hover); }
+  .avatar-chip {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--accent);
+    color: #FFF; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; flex-shrink: 0;
+  }
+
+  .content { max-width: 880px; width: 100%; margin: 0 auto; padding: 32px 40px 140px; flex: 1; }
+
+  /* Segmented control */
+  .seg { display: inline-flex; padding: 4px; border-radius: 11px; background: var(--chip); gap: 2px; }
+  .seg > div {
+    padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 13.5px;
+    cursor: pointer; transition: all .15s; color: var(--muted); background: transparent;
+  }
+  .seg > div.active { background: var(--seg-active); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .select {
+    padding: 9px 14px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--bg); color: var(--ink);
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; box-shadow: var(--card-shadow);
+  }
+
+  /* Weekly rows */
+  .day-row {
+    display: flex; align-items: flex-start; gap: 20px;
+    padding: 18px 4px; border-bottom: 1px solid var(--border);
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-row:hover { background: var(--hover); }
+  .day-left { width: 130px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding-top: 6px; }
+  .day-left .label { font-weight: 700; font-size: 14.5px; }
+  .slot-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--chip);
+  }
+  .slot-chip select {
+    border: none; background: transparent; color: var(--ink);
+    font-size: 13.5px; font-weight: 600; cursor: pointer; padding: 2px 0;
+    appearance: auto;
+  }
+  .slot-chip .x { cursor: pointer; color: var(--muted); font-size: 14px; padding: 0 2px; border: none; background: none; }
+  .add-hours { font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; padding: 8px 4px; border: none; background: none; }
+  .copy-all { font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; padding-top: 8px; flex-shrink: 0; border: none; background: none; }
+  .unavailable-text { font-size: 13.5px; color: var(--muted); padding-top: 8px; display: inline-block; }
+
+  .field-label { font-size: 13px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 8px; }
+  .stepper-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: transparent; color: var(--ink);
+    font-size: 16px; font-weight: 700; cursor: pointer; line-height: 1;
+  }
+  .pref-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-top: 1px solid var(--border);
+  }
+  .pref-row .t { font-weight: 700; font-size: 14.5px; margin-bottom: 2px; }
+  .pref-row .d { font-size: 13px; color: var(--muted); }
+
+  /* Calendar */
+  .calendar { background: var(--cal-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-head .nav-btn { cursor: pointer; font-size: 15px; color: var(--muted); background: none; border: none; padding: 2px 6px; }
+  .cal-head .month { font-weight: 700; font-size: 14px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { font-size: 11.5px; color: var(--muted); font-weight: 700; margin-bottom: 6px; text-align: center; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--ink);
+  }
+  .cal-day.blank { visibility: hidden; }
+  .cal-day.today { background: var(--accent); color: #FFF; }
+  .cal-day.override { background: var(--chip); border: 1.5px solid var(--accent); }
+
+  .ov-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; gap: 10px;
+  }
+  .ov-row .date { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .ov-row .detail { font-size: 13px; color: var(--muted); }
+  .badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+  .badge.custom { background: oklch(94% 0.03 165); color: oklch(38% 0.1 165); }
+  .badge.unavailable { background: oklch(94% 0.03 25); color: #B0472C; }
+  .ov-x { border: none; background: none; color: var(--muted); font-size: 15px; cursor: pointer; padding: 2px 4px; }
+
+  /* Save bar */
+  .save-bar {
+    position: fixed; bottom: 0; left: 232px; right: 0;
+    background: var(--card); border-top: 1px solid var(--border);
+    padding: 16px 40px; display: none; align-items: center; justify-content: space-between;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.06); z-index: 10;
+  }
+  .save-bar.show { display: flex; }
+  .save-bar .msg { font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .btn-discard {
+    padding: 11px 20px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: transparent; color: var(--ink);
+    font-weight: 700; font-size: 14px; cursor: pointer;
+  }
+  .btn-save {
+    padding: 11px 22px; border-radius: 10px; border: none;
+    background: var(--accent); color: #FFF; font-weight: 700; font-size: 14px; cursor: pointer;
+  }
+  .btn-accent-text { font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; padding: 6px 2px; border: none; background: none; }
+
+  @media (max-width: 900px) {
+    body { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; overflow-x: auto; padding: 10px 14px; }
+    .side-logo { padding: 4px 8px; }
+    .side-logo span, .side-bottom span { display: none; }
+    .side-spacer { display: none !important; }
+    .side-bottom { border-top: none; padding: 4px 8px; }
+    .page-header, .content { padding-left: 20px; padding-right: 20px; }
+    .save-bar { left: 0; padding: 14px 20px; }
+    .ov-grid { grid-template-columns: 1fr !important; }
+    .day-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <a href="/" class="side-logo"><div class="mark"></div><span>LetsTalkBuddy</span></a>
+  <div id="side-nav"></div>
+  <div style="flex:1" class="side-spacer"></div>
+  <div class="side-bottom">
+    <span>Dark mode</span>
+    <div class="switch" id="dark-switch"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="crumb">Settings</div>
+      <h1>Availability</h1>
+    </div>
+    <div class="header-right">
+      <div class="status-pill" id="status-pill"><span class="dot"></span><span id="status-text">…</span></div>
+      <div class="avatar-chip" id="avatar-chip"></div>
+      <div class="status-menu" id="status-menu">
+        <button data-act="on">Go online for 4 hours</button>
+        <button data-act="off">Go offline for 4 hours</button>
+        <button data-act="clear">Resume schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- TABS + TIMEZONE -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px">
+      <div class="seg" id="view-tabs">
+        <div class="active" data-tab="weekly">Weekly hours</div>
+        <div data-tab="overrides">Date overrides</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13.5px;font-weight:600;color:var(--muted)">Timezone</span>
+        <select class="select" id="tz-select">
+          <option>GMT+6 · Dhaka</option>
+          <option>GMT+0 · London</option>
+          <option>GMT-5 · New York</option>
+          <option>GMT+5:30 · Kolkata</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- WEEKLY VIEW -->
+    <div id="weekly-view">
+      <div class="card" style="padding:8px 24px;margin-bottom:24px" id="days-card"></div>
+
+      <div class="card" style="padding:24px;margin-bottom:24px">
+        <h2 style="font-size:16px;font-weight:700;margin:0 0 18px">Buffer &amp; booking limits</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <label class="field-label">Buffer before event</label>
+            <select class="select" style="width:100%" id="buffer-before">
+              <option value="0">No buffer</option><option value="5">5 minutes</option>
+              <option value="10">10 minutes</option><option value="15">15 minutes</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Buffer after event</label>
+            <select class="select" style="width:100%" id="buffer-after">
+              <option value="0">No buffer</option><option value="5">5 minutes</option>
+              <option value="10">10 minutes</option><option value="15">15 minutes</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Minimum notice</label>
+            <select class="select" style="width:100%" id="min-notice">
+              <option value="0">No notice needed</option><option value="4">4 hours</option>
+              <option value="12">12 hours</option><option value="24">24 hours</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Max bookings per day</label>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="stepper-btn" id="dec-max">–</button>
+              <span style="font-weight:700;font-size:14.5px;min-width:24px;text-align:center" id="max-bookings">6</span>
+              <button class="stepper-btn" id="inc-max">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <h2 style="font-size:16px;font-weight:700;margin:0 0 18px">Booking preferences</h2>
+        <div style="margin-bottom:20px">
+          <label class="field-label" style="margin-bottom:10px">Default session length</label>
+          <div class="seg" id="duration-seg">
+            <div data-min="15">15 min</div><div data-min="30">30 min</div>
+            <div data-min="45">45 min</div><div data-min="60">60 min</div>
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="t">Instant booking</div><div class="d">Let seekers book without your approval</div></div>
+          <div class="switch" id="instant-switch"></div>
+        </div>
+        <div class="pref-row">
+          <div><div class="t">Require rescheduling notice</div><div class="d">Seekers must reschedule at least 2 hours in advance</div></div>
+          <div class="switch" id="reschedule-switch"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERRIDES VIEW -->
+    <div id="overrides-view" style="display:none">
+      <div class="card" style="padding:24px;margin-bottom:24px">
+        <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Date-specific hours</h2>
+        <p style="font-size:13.5px;color:var(--muted);margin:0 0 20px">Override your weekly hours for specific dates — holidays, travel, or one-off availability.</p>
+        <div class="ov-grid" style="display:grid;grid-template-columns:260px 1fr;gap:28px">
+          <div>
+            <div class="calendar">
+              <div class="cal-head">
+                <button class="nav-btn" id="cal-prev">‹</button>
+                <span class="month" id="cal-month"></span>
+                <button class="nav-btn" id="cal-next">›</button>
+              </div>
+              <div class="cal-grid" style="margin-bottom:6px">
+                <span class="cal-dow">S</span><span class="cal-dow">M</span><span class="cal-dow">T</span>
+                <span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span>
+              </div>
+              <div class="cal-grid" id="cal-days"></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div id="ov-list" style="display:flex;flex-direction:column;gap:10px"></div>
+
+            <div id="ov-form" style="display:none;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+                <input type="date" class="select" id="ov-date">
+                <div class="seg" id="ov-kind">
+                  <div class="active" data-kind="unavailable">Unavailable</div>
+                  <div data-kind="custom">Custom hours</div>
+                </div>
+              </div>
+              <div id="ov-times" style="display:none;margin-bottom:12px;align-items:center;gap:8px">
+                <select class="select" id="ov-start"></select>
+                <span style="font-size:13px;font-weight:600">–</span>
+                <select class="select" id="ov-end"></select>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn-save" style="padding:9px 16px;font-size:13px" id="ov-add">Add override</button>
+                <button class="btn-discard" style="padding:9px 16px;font-size:13px" id="ov-cancel">Cancel</button>
+              </div>
+              <div id="ov-err" style="font-size:13px;font-weight:600;color:#B0472C;margin-top:10px"></div>
+            </div>
+
+            <button class="btn-accent-text" id="ov-open" style="text-align:left">+ Add date override</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="save-bar">
+  <span class="msg">You have unsaved changes</span>
+  <div style="display:flex;gap:10px">
+    <button class="btn-discard" id="btn-discard">Discard</button>
+    <button class="btn-save" id="btn-save">Save changes</button>
+  </div>
+</div>
+
+<script>
+const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const NAV_ITEMS = [
+  { icon: 'grid', label: 'Dashboard' }, { icon: 'calendar', label: 'Bookings' },
+  { icon: 'clock', label: 'Availability', active: true }, { icon: 'user', label: 'Profile' },
+  { icon: 'card', label: 'Payments' }, { icon: 'gear', label: 'Settings' },
+];
+const ICONS = {
+  grid: '<rect x="1.5" y="1.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="10.5" y="1.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1.5" y="10.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="10.5" y="10.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/>',
+  calendar: '<rect x="2" y="3" width="14" height="12.5" rx="2" stroke="currentColor" stroke-width="1.4"/><line x1="2" y1="7" x2="16" y2="7" stroke="currentColor" stroke-width="1.4"/><line x1="5.5" y1="1.2" x2="5.5" y2="4.5" stroke="currentColor" stroke-width="1.4"/><line x1="12.5" y1="1.2" x2="12.5" y2="4.5" stroke="currentColor" stroke-width="1.4"/>',
+  clock: '<circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><line x1="9" y1="9" x2="9" y2="5" stroke="currentColor" stroke-width="1.4"/><line x1="9" y1="9" x2="12" y2="11" stroke="currentColor" stroke-width="1.4"/>',
+  user: '<circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 16c1-3.5 4-5 6.5-5s5.5 1.5 6.5 5" stroke="currentColor" stroke-width="1.4" fill="none"/>',
+  card: '<rect x="1.5" y="4" width="15" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><line x1="1.5" y1="7.5" x2="16.5" y2="7.5" stroke="currentColor" stroke-width="1.4"/>',
+  gear: '<circle cx="9" cy="9" r="2.6" stroke="currentColor" stroke-width="1.4"/><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.2" stroke-dasharray="1.6 2.2"/>',
+};
+
+const state = {
+  days: DAY_LABELS.map(() => ({ enabled: false, slots: [] })),
+  settings: null,
+  overrides: [],
+  online: false,
+  override: null,
+  dirty: false,
+  calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  ovKind: 'unavailable',
+};
+
+async function api(url, method = 'GET', body) {
+  const res = await fetch(url, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { window.location.href = '/login.html'; throw new Error('unauthorized'); }
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function fmtMinute(m) {
+  if (m === 1440 || m === 0) return '12:00 AM';
+  const h = Math.floor(m / 60), min = m % 60;
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(min).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+function localYMD(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function fmtDate(ymd) {
+  return new Date(ymd + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function markDirty() {
+  state.dirty = true;
+  document.getElementById('save-bar').classList.add('show');
+}
+function clearDirty() {
+  state.dirty = false;
+  document.getElementById('save-bar').classList.remove('show');
+}
+
+/* ---------- sidebar ---------- */
+document.getElementById('side-nav').innerHTML = NAV_ITEMS.map(n => `
+  <div class="nav-item${n.active ? ' active' : ''}" ${n.active ? '' : 'title="Coming soon"'}>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">${ICONS[n.icon]}</svg>
+    <span>${n.label}</span>
+  </div>`).join('');
+
+const darkSwitch = document.getElementById('dark-switch');
+function applyTheme(dark) {
+  document.body.classList.toggle('dark', dark);
+  darkSwitch.classList.toggle('on', dark);
+  localStorage.setItem('ltb-theme', dark ? 'dark' : 'light');
+}
+darkSwitch.addEventListener('click', () => applyTheme(!document.body.classList.contains('dark')));
+applyTheme(localStorage.getItem('ltb-theme') === 'dark');
+
+/* ---------- status pill ---------- */
+const statusMenu = document.getElementById('status-menu');
+document.getElementById('status-pill').addEventListener('click', (e) => {
+  e.stopPropagation();
+  statusMenu.classList.toggle('open');
+});
+document.addEventListener('click', () => statusMenu.classList.remove('open'));
+statusMenu.querySelectorAll('button').forEach(b =>
+  b.addEventListener('click', async () => {
+    const act = b.dataset.act;
+    if (act === 'clear') await fetch('/api/availability/override', { method: 'DELETE' });
+    else await api('/api/availability/override', 'POST', { status: act, hours: 4 });
+    refreshStatus();
+  }));
+
+function renderStatus() {
+  const pill = document.getElementById('status-pill');
+  pill.classList.toggle('online', state.online);
+  let text = state.online ? 'Online' : 'Offline';
+  if (state.override) {
+    const until = new Date(state.override.until).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    text += ` · manual until ${until}`;
+  }
+  document.getElementById('status-text').textContent = text;
+}
+
+async function refreshStatus() {
+  const d = await api('/api/availability');
+  state.online = d.online;
+  state.override = d.override;
+  renderStatus();
+}
+
+/* ---------- weekly editor ---------- */
+function timeOptions(sel, from, to, value) {
+  sel.innerHTML = '';
+  for (let m = from; m <= to; m += 30) {
+    sel.add(new Option(m === 1440 ? '12:00 AM' : fmtMinute(m), m));
+  }
+  sel.value = value;
+}
+
+function renderDays() {
+  const card = document.getElementById('days-card');
+  card.innerHTML = state.days.map((d, i) => `
+    <div class="day-row">
+      <div class="day-left">
+        <div class="switch${d.enabled ? ' on' : ''}" data-toggle="${i}"></div>
+        <span class="label">${DAY_LABELS[i]}</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        ${d.enabled ? `
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            ${d.slots.map((s, si) => `
+              <div class="slot-chip">
+                <svg width="10" height="14" viewBox="0 0 10 14">${[2.5, 7, 11.5].map(y => `<circle cx="2.5" cy="${y}" r="1.3" fill="currentColor" opacity="0.4"/><circle cx="7.5" cy="${y}" r="1.3" fill="currentColor" opacity="0.4"/>`).join('')}</svg>
+                <select data-slot="${i}:${si}:start"></select>
+                <span style="font-size:13px;font-weight:600">–</span>
+                <select data-slot="${i}:${si}:end"></select>
+                <button class="x" data-remove="${i}:${si}">✕</button>
+              </div>`).join('')}
+            <button class="add-hours" data-add="${i}">+ Add hours</button>
+          </div>`
+        : '<span class="unavailable-text">Unavailable</span>'}
+      </div>
+      <button class="copy-all" data-copy="${i}">Copy to all</button>
+    </div>`).join('');
+
+  card.querySelectorAll('select[data-slot]').forEach(sel => {
+    const [di, si, which] = sel.dataset.slot.split(':');
+    const slot = state.days[di].slots[si];
+    if (which === 'start') timeOptions(sel, 0, 1410, slot.start_minute);
+    else timeOptions(sel, 30, 1440, slot.end_minute);
+    sel.addEventListener('change', () => {
+      slot[which === 'start' ? 'start_minute' : 'end_minute'] = Number(sel.value);
+      if (slot.end_minute <= slot.start_minute) {
+        slot.end_minute = Math.min(1440, slot.start_minute + 30);
+        renderDays();
+      }
+      markDirty();
+    });
+  });
+  card.querySelectorAll('[data-toggle]').forEach(el =>
+    el.addEventListener('click', () => {
+      const d = state.days[el.dataset.toggle];
+      d.enabled = !d.enabled;
+      if (d.enabled && !d.slots.length) d.slots.push({ start_minute: 540, end_minute: 1020 });
+      markDirty();
+      renderDays();
+    }));
+  card.querySelectorAll('[data-add]').forEach(el =>
+    el.addEventListener('click', () => {
+      state.days[el.dataset.add].slots.push({ start_minute: 540, end_minute: 1020 });
+      markDirty();
+      renderDays();
+    }));
+  card.querySelectorAll('[data-remove]').forEach(el =>
+    el.addEventListener('click', () => {
+      const [di, si] = el.dataset.remove.split(':');
+      state.days[di].slots.splice(si, 1);
+      if (!state.days[di].slots.length) state.days[di].enabled = false;
+      markDirty();
+      renderDays();
+    }));
+  card.querySelectorAll('[data-copy]').forEach(el =>
+    el.addEventListener('click', () => {
+      const src = state.days[el.dataset.copy];
+      state.days = state.days.map(() => ({
+        enabled: src.enabled,
+        slots: src.slots.map(s => ({ ...s })),
+      }));
+      markDirty();
+      renderDays();
+    }));
+}
+
+/* ---------- settings controls ---------- */
+function renderSettings() {
+  const s = state.settings;
+  document.getElementById('tz-select').value = s.timezone;
+  document.getElementById('buffer-before').value = s.buffer_before;
+  document.getElementById('buffer-after').value = s.buffer_after;
+  document.getElementById('min-notice').value = s.min_notice_hours;
+  document.getElementById('max-bookings').textContent = s.max_bookings_per_day;
+  document.querySelectorAll('#duration-seg > div').forEach(d =>
+    d.classList.toggle('active', Number(d.dataset.min) === Number(s.session_length)));
+  document.getElementById('instant-switch').classList.toggle('on', !!Number(s.instant_booking));
+  document.getElementById('reschedule-switch').classList.toggle('on', !!Number(s.reschedule_notice));
+}
+
+['tz-select', 'buffer-before', 'buffer-after', 'min-notice'].forEach(id =>
+  document.getElementById(id).addEventListener('change', (e) => {
+    const map = { 'tz-select': 'timezone', 'buffer-before': 'buffer_before', 'buffer-after': 'buffer_after', 'min-notice': 'min_notice_hours' };
+    state.settings[map[id]] = id === 'tz-select' ? e.target.value : Number(e.target.value);
+    markDirty();
+  }));
+document.getElementById('inc-max').addEventListener('click', () => {
+  state.settings.max_bookings_per_day = Math.min(50, state.settings.max_bookings_per_day + 1);
+  markDirty(); renderSettings();
+});
+document.getElementById('dec-max').addEventListener('click', () => {
+  state.settings.max_bookings_per_day = Math.max(1, state.settings.max_bookings_per_day - 1);
+  markDirty(); renderSettings();
+});
+document.querySelectorAll('#duration-seg > div').forEach(d =>
+  d.addEventListener('click', () => {
+    state.settings.session_length = Number(d.dataset.min);
+    markDirty(); renderSettings();
+  }));
+document.getElementById('instant-switch').addEventListener('click', () => {
+  state.settings.instant_booking = Number(state.settings.instant_booking) ? 0 : 1;
+  markDirty(); renderSettings();
+});
+document.getElementById('reschedule-switch').addEventListener('click', () => {
+  state.settings.reschedule_notice = Number(state.settings.reschedule_notice) ? 0 : 1;
+  markDirty(); renderSettings();
+});
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('#view-tabs > div').forEach(t =>
+  t.addEventListener('click', () => {
+    document.querySelectorAll('#view-tabs > div').forEach(x => x.classList.toggle('active', x === t));
+    document.getElementById('weekly-view').style.display = t.dataset.tab === 'weekly' ? '' : 'none';
+    document.getElementById('overrides-view').style.display = t.dataset.tab === 'overrides' ? '' : 'none';
+  }));
+
+/* ---------- calendar + overrides ---------- */
+function renderCalendar() {
+  const m = state.calMonth;
+  document.getElementById('cal-month').textContent =
+    m.toLocaleDateString([], { month: 'long', year: 'numeric' });
+  const first = new Date(m.getFullYear(), m.getMonth(), 1).getDay();
+  const daysInMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+  const today = localYMD(new Date());
+  const ovDates = new Set(state.overrides.map(o => o.date));
+
+  let html = '';
+  for (let i = 0; i < first; i++) html += '<button class="cal-day blank"></button>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ymd = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const cls = ymd === today ? ' today' : (ovDates.has(ymd) ? ' override' : '');
+    html += `<button class="cal-day${cls}" data-date="${ymd}">${d}</button>`;
+  }
+  document.getElementById('cal-days').innerHTML = html;
+  document.querySelectorAll('.cal-day[data-date]').forEach(b =>
+    b.addEventListener('click', () => {
+      openOvForm(b.dataset.date);
+    }));
+}
+document.getElementById('cal-prev').addEventListener('click', () => {
+  state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() - 1, 1);
+  renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', () => {
+  state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth() + 1, 1);
+  renderCalendar();
+});
+
+function renderOverrides() {
+  const list = document.getElementById('ov-list');
+  list.innerHTML = state.overrides.length ? state.overrides.map(o => `
+    <div class="ov-row">
+      <div>
+        <div class="date">${fmtDate(o.date)}</div>
+        <div class="detail">${o.unavailable ? 'Unavailable all day'
+          : 'Custom hours · ' + o.slots.map(s => `${fmtMinute(s.start_minute)} – ${fmtMinute(s.end_minute)}`).join(', ')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge ${o.unavailable ? 'unavailable' : 'custom'}">${o.unavailable ? 'Unavailable' : 'Custom'}</span>
+        <button class="ov-x" data-del="${o.date}" title="Remove override">✕</button>
+      </div>
+    </div>`).join('')
+    : '<p style="font-size:13.5px;color:var(--muted);margin:4px 0">No date overrides yet.</p>';
+  list.querySelectorAll('[data-del]').forEach(b =>
+    b.addEventListener('click', async () => {
+      await api('/api/availability/overrides/' + b.dataset.del, 'DELETE');
+      await reloadOverrides();
+    }));
+  renderCalendar();
+}
+
+function openOvForm(date) {
+  document.getElementById('ov-form').style.display = '';
+  if (date) document.getElementById('ov-date').value = date;
+}
+document.getElementById('ov-open').addEventListener('click', () => openOvForm());
+document.getElementById('ov-cancel').addEventListener('click', () => {
+  document.getElementById('ov-form').style.display = 'none';
+  document.getElementById('ov-err').textContent = '';
+});
+document.querySelectorAll('#ov-kind > div').forEach(t =>
+  t.addEventListener('click', () => {
+    state.ovKind = t.dataset.kind;
+    document.querySelectorAll('#ov-kind > div').forEach(x => x.classList.toggle('active', x === t));
+    document.getElementById('ov-times').style.display = state.ovKind === 'custom' ? 'flex' : 'none';
+  }));
+timeOptions(document.getElementById('ov-start'), 0, 1410, 600);
+timeOptions(document.getElementById('ov-end'), 30, 1440, 840);
+document.getElementById('ov-date').min = localYMD(new Date());
+
+document.getElementById('ov-add').addEventListener('click', async () => {
+  const err = document.getElementById('ov-err');
+  err.textContent = '';
+  try {
+    await api('/api/availability/overrides', 'POST', {
+      date: document.getElementById('ov-date').value,
+      unavailable: state.ovKind === 'unavailable',
+      slots: [{
+        start_minute: Number(document.getElementById('ov-start').value),
+        end_minute: Number(document.getElementById('ov-end').value),
+      }],
+    });
+    document.getElementById('ov-form').style.display = 'none';
+    await reloadOverrides();
+    refreshStatus();
+  } catch (e) {
+    err.textContent = e.message;
+  }
+});
+
+async function reloadOverrides() {
+  const d = await api('/api/availability');
+  state.overrides = d.overrides;
+  renderOverrides();
+}
+
+/* ---------- save / discard ---------- */
+document.getElementById('btn-save').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    await api('/api/availability/weekly', 'PUT', {
+      days: state.days.map((d, i) => ({ day: i, slots: d.enabled ? d.slots : [] })),
+    });
+    await api('/api/availability/settings', 'PUT', state.settings);
+    clearDirty();
+    refreshStatus();
+  } catch (e) {
+    alert(e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Save changes';
+});
+document.getElementById('btn-discard').addEventListener('click', () => load());
+
+/* ---------- initial load ---------- */
+async function load() {
+  const [me, d] = await Promise.all([
+    api('/api/auth/me'),
+    api('/api/availability'),
+  ]);
+  if (!me.user) { window.location.href = '/login.html'; return; }
+  document.getElementById('avatar-chip').textContent =
+    me.user.name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+
+  state.days = d.weekly.map(w => ({ enabled: w.slots.length > 0, slots: w.slots.map(s => ({ ...s })) }));
+  state.settings = d.settings;
+  state.overrides = d.overrides;
+  state.online = d.online;
+  state.override = d.override;
+
+  clearDirty();
+  renderDays();
+  renderSettings();
+  renderOverrides();
+  renderStatus();
+}
+load();
+</script>
+</body>
+</html>
