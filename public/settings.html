@@ -216,6 +216,50 @@
   }
   .btn-accent-text { font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; padding: 6px 2px; border: none; background: none; }
 
+  /* Profile section */
+  .text-input {
+    padding: 10px 13px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--bg); color: var(--ink);
+    font-size: 14px; font-weight: 500; width: 100%;
+  }
+  textarea.text-input { resize: vertical; min-height: 84px; line-height: 1.5; }
+  .pf-cat {
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; margin-bottom: 14px;
+  }
+  .pf-cat-grid { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 12px; margin-bottom: 12px; }
+  .pf-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .pf-msg { font-size: 12.5px; font-weight: 600; }
+  .pf-msg.ok { color: #1C7A46; }
+  .pf-msg.err { color: #B0472C; }
+  .photo-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .photo-thumb { position: relative; width: 88px; height: 88px; }
+  .photo-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 12px; border: 1px solid var(--border); display: block;
+  }
+  .photo-thumb.round img { border-radius: 50%; }
+  .photo-thumb .rm {
+    position: absolute; top: -6px; right: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: none; background: var(--ink); color: var(--bg);
+    font-size: 11px; cursor: pointer; line-height: 1;
+  }
+  .upload-tile {
+    width: 88px; height: 88px; border-radius: 12px;
+    border: 1.5px dashed var(--border); background: transparent;
+    color: var(--muted); font-size: 24px; cursor: pointer;
+  }
+  .album-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  .album-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-radius: 999px;
+    border: 1.5px solid var(--border); background: transparent;
+    font-size: 13px; font-weight: 700; cursor: pointer; color: var(--ink);
+  }
+  .album-pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .album-pill .del { border: none; background: none; color: inherit; cursor: pointer; font-size: 12px; padding: 0; opacity: 0.7; }
+
   @media (max-width: 900px) {
     body { flex-direction: column; }
     .sidebar { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; overflow-x: auto; padding: 10px 14px; }
@@ -248,7 +292,7 @@
   <div class="page-header">
     <div>
       <div class="crumb">Settings</div>
-      <h1>Availability</h1>
+      <h1 id="page-title">Availability</h1>
     </div>
     <div class="header-right">
       <div class="status-pill" id="status-pill"><span class="dot"></span><span id="status-text">…</span></div>
@@ -261,7 +305,7 @@
     </div>
   </div>
 
-  <div class="content">
+  <div class="content" id="section-availability">
     <!-- TABS + TIMEZONE -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px">
       <div class="seg" id="view-tabs">
@@ -387,6 +431,49 @@
       </div>
     </div>
   </div>
+
+  <!-- PROFILE SECTION -->
+  <div class="content" id="section-profile" style="display:none">
+
+    <div class="card" style="padding:24px;margin-bottom:24px">
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Name</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Shared across all of your advisor profiles.</p>
+      <div style="display:flex;gap:10px;align-items:center;max-width:440px">
+        <input class="text-input" id="pf-name">
+        <button class="btn-save" style="padding:10px 18px;font-size:13.5px;flex-shrink:0" id="pf-name-save">Save</button>
+      </div>
+      <div class="pf-msg" id="pf-name-msg" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card" style="padding:24px;margin-bottom:24px">
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Advisor categories</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 18px">One profile per category you advise in — each with its own title, rate, and about section.</p>
+      <div id="pf-cats"></div>
+      <button class="btn-accent-text" id="pf-cat-add">+ Add category profile</button>
+    </div>
+
+    <div class="card" style="padding:24px;margin-bottom:24px">
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Display pictures</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Shown as your profile photo. <span id="pf-limit-note"></span></p>
+      <div class="photo-grid" id="pf-display"></div>
+      <input type="file" id="pf-display-file" accept="image/*" style="display:none">
+      <div class="pf-msg" id="pf-display-msg" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card" style="padding:24px">
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Gallery</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Organize photos into albums — clinic photos, credentials, past sessions, anything seekers should see.</p>
+      <div class="album-pills" id="pf-albums"></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;max-width:360px">
+        <input class="text-input" id="pf-album-name" placeholder="New album name">
+        <button class="btn-discard" style="padding:9px 14px;font-size:13px;flex-shrink:0" id="pf-album-add">Create</button>
+      </div>
+      <div class="photo-grid" id="pf-gallery"></div>
+      <input type="file" id="pf-gallery-file" accept="image/*" multiple style="display:none">
+      <div class="pf-msg" id="pf-gallery-msg" style="margin-top:10px"></div>
+    </div>
+
+  </div>
 </div>
 
 <!-- SAVE BAR -->
@@ -402,7 +489,8 @@
 const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const NAV_ITEMS = [
   { icon: 'grid', label: 'Dashboard' }, { icon: 'calendar', label: 'Bookings' },
-  { icon: 'clock', label: 'Availability', active: true }, { icon: 'user', label: 'Profile' },
+  { icon: 'clock', label: 'Availability', section: 'availability' },
+  { icon: 'user', label: 'Profile', section: 'profile' },
   { icon: 'card', label: 'Payments' }, { icon: 'gear', label: 'Settings' },
 ];
 const ICONS = {
@@ -459,11 +547,28 @@ function clearDirty() {
 }
 
 /* ---------- sidebar ---------- */
+let currentSection = location.hash === '#profile' ? 'profile' : 'availability';
+
 document.getElementById('side-nav').innerHTML = NAV_ITEMS.map(n => `
-  <div class="nav-item${n.active ? ' active' : ''}" ${n.active ? '' : 'title="Coming soon"'}>
+  <div class="nav-item" ${n.section ? `data-section="${n.section}"` : 'title="Coming soon"'}>
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none">${ICONS[n.icon]}</svg>
     <span>${n.label}</span>
   </div>`).join('');
+
+const SECTION_TITLES = { availability: 'Availability', profile: 'Profile' };
+function setSection(name) {
+  currentSection = name;
+  location.hash = name === 'profile' ? '#profile' : '';
+  document.querySelectorAll('.nav-item[data-section]').forEach(el =>
+    el.classList.toggle('active', el.dataset.section === name));
+  document.getElementById('section-availability').style.display = name === 'availability' ? '' : 'none';
+  document.getElementById('section-profile').style.display = name === 'profile' ? '' : 'none';
+  document.getElementById('page-title').textContent = SECTION_TITLES[name];
+  document.getElementById('save-bar').classList.toggle('show', name === 'availability' && state.dirty);
+  if (name === 'profile' && !pf.loaded) loadProfileSection();
+}
+document.querySelectorAll('.nav-item[data-section]').forEach(el =>
+  el.addEventListener('click', () => setSection(el.dataset.section)));
 
 const darkSwitch = document.getElementById('dark-switch');
 function applyTheme(dark) {
@@ -782,7 +887,235 @@ async function load() {
   renderOverrides();
   renderStatus();
 }
-load();
+
+/* ============================ PROFILE SECTION ============================ */
+const pf = {
+  loaded: false,
+  leafCats: [],
+  profiles: [],      // saved + unsaved category profiles
+  displayPhotos: [],
+  albums: [],
+  activeAlbum: null,
+  maxUploadKb: 500,
+};
+
+function escapeText(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function pfMsg(id, text, ok) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'pf-msg ' + (ok ? 'ok' : 'err');
+  if (ok) setTimeout(() => { el.textContent = ''; }, 2500);
+}
+
+async function loadProfileSection() {
+  pf.loaded = true;
+  const [profile, cats] = await Promise.all([
+    api('/api/profile'),
+    api('/api/categories'),
+  ]);
+  const parents = new Set(cats.categories.filter(c => c.parent_id).map(c => c.parent_id));
+  pf.leafCats = cats.categories.filter(c => !parents.has(c.id));
+  pf.profiles = profile.profiles.map(p => ({ ...p, saved: true }));
+  pf.displayPhotos = profile.displayPhotos;
+  pf.albums = profile.albums;
+  pf.maxUploadKb = profile.maxUploadKb;
+  if (!pf.albums.some(a => a.id === pf.activeAlbum)) pf.activeAlbum = pf.albums[0]?.id ?? null;
+
+  document.getElementById('pf-name').value = profile.name;
+  document.getElementById('pf-limit-note').textContent = `Max image size: ${pf.maxUploadKb} kB.`;
+  renderPfCats();
+  renderPfPhotos();
+  renderPfAlbums();
+}
+
+async function reloadProfile() {
+  const profile = await api('/api/profile');
+  pf.profiles = profile.profiles.map(p => ({ ...p, saved: true }));
+  pf.displayPhotos = profile.displayPhotos;
+  pf.albums = profile.albums;
+  if (!pf.albums.some(a => a.id === pf.activeAlbum)) pf.activeAlbum = pf.albums[0]?.id ?? null;
+  renderPfCats();
+  renderPfPhotos();
+  renderPfAlbums();
+}
+
+/* ----- name ----- */
+document.getElementById('pf-name-save').addEventListener('click', async () => {
+  try {
+    const { name } = await api('/api/profile/name', 'PUT', { name: document.getElementById('pf-name').value });
+    document.getElementById('pf-name').value = name;
+    pfMsg('pf-name-msg', 'Saved.', true);
+  } catch (e) { pfMsg('pf-name-msg', e.message, false); }
+});
+
+/* ----- category profiles ----- */
+function renderPfCats() {
+  const box = document.getElementById('pf-cats');
+  box.innerHTML = pf.profiles.length ? pf.profiles.map((p, i) => `
+    <div class="pf-cat">
+      <div class="pf-cat-grid">
+        <div>
+          <label class="field-label">Category</label>
+          <select class="text-input" data-pf="cat:${i}">
+            ${pf.leafCats.map(c => `<option value="${c.id}" ${c.id === p.category_id ? 'selected' : ''}>${escapeText(c.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Title</label>
+          <input class="text-input" data-pf="title:${i}" value="${escapeText(p.title)}" placeholder='e.g. "Medicine specialist"'>
+        </div>
+        <div>
+          <label class="field-label">Rate ($/min)</label>
+          <input class="text-input" data-pf="rate:${i}" type="number" step="0.25" min="0.25" value="${p.rate_per_min}">
+        </div>
+      </div>
+      <label class="field-label">About</label>
+      <textarea class="text-input" data-pf="about:${i}" placeholder="Tell seekers about your experience in this category…">${escapeText(p.about || '')}</textarea>
+      <div class="pf-actions">
+        <button class="btn-save" style="padding:9px 16px;font-size:13px" data-pf-save="${i}">${p.saved ? 'Save changes' : 'Save profile'}</button>
+        <button class="btn-discard" style="padding:9px 16px;font-size:13px" data-pf-del="${i}">Remove</button>
+        <span class="pf-msg" id="pf-cat-msg-${i}"></span>
+      </div>
+    </div>`).join('')
+    : '<p style="font-size:13.5px;color:var(--muted);margin:0 0 12px">No category profiles yet — add your first one.</p>';
+
+  box.querySelectorAll('[data-pf-save]').forEach(b =>
+    b.addEventListener('click', async () => {
+      const i = Number(b.dataset.pfSave);
+      const p = pf.profiles[i];
+      const body = {
+        category_id: Number(box.querySelector(`[data-pf="cat:${i}"]`).value),
+        title: box.querySelector(`[data-pf="title:${i}"]`).value,
+        rate_per_min: Number(box.querySelector(`[data-pf="rate:${i}"]`).value),
+        about: box.querySelector(`[data-pf="about:${i}"]`).value,
+      };
+      try {
+        if (p.saved) await api('/api/profile/categories/' + p.id, 'PUT', body);
+        else await api('/api/profile/categories', 'POST', body);
+        await reloadProfile();
+      } catch (e) { pfMsg(`pf-cat-msg-${i}`, e.message, false); }
+    }));
+
+  box.querySelectorAll('[data-pf-del]').forEach(b =>
+    b.addEventListener('click', async () => {
+      const i = Number(b.dataset.pfDel);
+      const p = pf.profiles[i];
+      if (!p.saved) { pf.profiles.splice(i, 1); renderPfCats(); return; }
+      if (!confirm('Remove this category profile? Its reviews will be deleted too.')) return;
+      try {
+        await api('/api/profile/categories/' + p.id, 'DELETE');
+        await reloadProfile();
+      } catch (e) { pfMsg(`pf-cat-msg-${i}`, e.message, false); }
+    }));
+}
+
+document.getElementById('pf-cat-add').addEventListener('click', () => {
+  const used = new Set(pf.profiles.map(p => p.category_id));
+  const firstFree = pf.leafCats.find(c => !used.has(c.id));
+  pf.profiles.push({
+    saved: false, id: null,
+    category_id: firstFree ? firstFree.id : pf.leafCats[0].id,
+    title: '', about: '', rate_per_min: '1.00',
+  });
+  renderPfCats();
+});
+
+/* ----- photos ----- */
+async function uploadPhotos(files, kind, msgId) {
+  for (const file of files) {
+    const fd = new FormData();
+    fd.append('photo', file);
+    fd.append('kind', kind);
+    if (kind === 'gallery') fd.append('album_id', pf.activeAlbum);
+    const res = await fetch('/api/profile/photos', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { pfMsg(msgId, data.error || 'Upload failed.', false); return; }
+  }
+  pfMsg(msgId, 'Uploaded.', true);
+  await reloadProfile();
+}
+
+function photoThumbHTML(p, round) {
+  return `
+    <div class="photo-thumb${round ? ' round' : ''}">
+      <img src="${p.url}" alt="">
+      <button class="rm" data-photo-del="${p.id}" title="Remove">✕</button>
+    </div>`;
+}
+
+function bindPhotoDeletes(container, msgId) {
+  container.querySelectorAll('[data-photo-del]').forEach(b =>
+    b.addEventListener('click', async () => {
+      try {
+        await api('/api/profile/photos/' + b.dataset.photoDel, 'DELETE');
+        await reloadProfile();
+      } catch (e) { pfMsg(msgId, e.message, false); }
+    }));
+}
+
+function renderPfPhotos() {
+  const box = document.getElementById('pf-display');
+  box.innerHTML = pf.displayPhotos.map(p => photoThumbHTML(p, true)).join('') +
+    '<button class="upload-tile" id="pf-display-upload" title="Add display picture" style="border-radius:50%">+</button>';
+  document.getElementById('pf-display-upload').addEventListener('click', () =>
+    document.getElementById('pf-display-file').click());
+  bindPhotoDeletes(box, 'pf-display-msg');
+}
+document.getElementById('pf-display-file').addEventListener('change', (e) => {
+  if (e.target.files.length) uploadPhotos([...e.target.files], 'display', 'pf-display-msg');
+  e.target.value = '';
+});
+
+/* ----- albums + gallery ----- */
+function renderPfAlbums() {
+  const pills = document.getElementById('pf-albums');
+  pills.innerHTML = pf.albums.length ? pf.albums.map(a => `
+    <div class="album-pill${a.id === pf.activeAlbum ? ' active' : ''}" data-album="${a.id}">
+      ${escapeText(a.name)} (${a.photos.length})
+      <button class="del" data-album-del="${a.id}" title="Delete album">✕</button>
+    </div>`).join('')
+    : '<span style="font-size:13.5px;color:var(--muted)">No albums yet — create one below to start uploading.</span>';
+
+  pills.querySelectorAll('[data-album]').forEach(el =>
+    el.addEventListener('click', () => {
+      pf.activeAlbum = Number(el.dataset.album);
+      renderPfAlbums();
+    }));
+  pills.querySelectorAll('[data-album-del]').forEach(b =>
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('Delete this album and all of its photos?')) return;
+      await api('/api/profile/albums/' + b.dataset.albumDel, 'DELETE');
+      await reloadProfile();
+    }));
+
+  const gal = document.getElementById('pf-gallery');
+  const active = pf.albums.find(a => a.id === pf.activeAlbum);
+  gal.innerHTML = active
+    ? active.photos.map(p => photoThumbHTML(p, false)).join('') +
+      '<button class="upload-tile" id="pf-gallery-upload" title="Upload to this album">+</button>'
+    : '';
+  const up = document.getElementById('pf-gallery-upload');
+  if (up) up.addEventListener('click', () => document.getElementById('pf-gallery-file').click());
+  bindPhotoDeletes(gal, 'pf-gallery-msg');
+}
+document.getElementById('pf-gallery-file').addEventListener('change', (e) => {
+  if (e.target.files.length) uploadPhotos([...e.target.files], 'gallery', 'pf-gallery-msg');
+  e.target.value = '';
+});
+document.getElementById('pf-album-add').addEventListener('click', async () => {
+  const name = document.getElementById('pf-album-name').value.trim();
+  if (!name) return pfMsg('pf-gallery-msg', 'Give the album a name first.', false);
+  const { id } = await api('/api/profile/albums', 'POST', { name });
+  document.getElementById('pf-album-name').value = '';
+  pf.activeAlbum = id;
+  await reloadProfile();
+});
+
+load().then(() => setSection(currentSection));
 </script>
 </body>
 </html>

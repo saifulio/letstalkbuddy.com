@@ -1,7 +1,10 @@
 require('dotenv').config();
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
 const express = require('express');
 const session = require('express-session');
+const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const pool = require('./db');
 const { computeStatus } = require('./availability');
@@ -18,6 +21,11 @@ app.use(session({
   cookie: { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 },
 }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// Hard cap; the real limit comes from app_settings.max_upload_kb.
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 function requireAuth(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: 'Please log in first.' });
@@ -238,6 +246,14 @@ app.get('/api/advisors/:id', async (req, res) => {
     if (!rows[0]) return res.status(404).json({ error: 'Advisor not found.' });
     await overlayAvailability(rows);
 
+    // Real photos for user-linked advisors (display picture + gallery).
+    if (rows[0].user_id) {
+      const [photos] = await pool.query(
+        "SELECT kind, url FROM photos WHERE user_id = ? ORDER BY kind = 'display' DESC, id DESC LIMIT 20",
+        [rows[0].user_id]);
+      rows[0].photos = photos;
+    }
+
     // Category breadcrumb, e.g. ["Professional", "Lawyer", "Immigration Consultant"]
     const [cats] = await pool.query('SELECT id, name, parent_id FROM categories');
     const byId = new Map(cats.map(c => [c.id, c]));
@@ -252,6 +268,213 @@ app.get('/api/advisors/:id', async (req, res) => {
        FROM reviews WHERE advisor_id = ?
        ORDER BY created_at DESC LIMIT 20`, [id]);
     res.json({ advisor: rows[0], reviews });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+// ---------- Profile (settings -> profile) ----------
+const IMAGE_TYPES = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif' };
+
+async function getAppSetting(name, fallback) {
+  const [rows] = await pool.query('SELECT value FROM app_settings WHERE name = ?', [name]);
+  return rows.length ? rows[0].value : fallback;
+}
+
+app.get('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const uid = req.session.userId;
+    const [[user]] = await pool.query('SELECT id, full_name, email FROM users WHERE id = ?', [uid]);
+    const [profiles] = await pool.query(`
+      SELECT a.id, a.category_id, a.title, a.about, a.rate_per_min, c.name AS category
+      FROM advisors a JOIN categories c ON c.id = a.category_id
+      WHERE a.user_id = ? ORDER BY a.id`, [uid]);
+    const [albums] = await pool.query('SELECT id, name FROM albums WHERE user_id = ? ORDER BY id', [uid]);
+    const [photos] = await pool.query(
+      'SELECT id, album_id, kind, url, size_bytes FROM photos WHERE user_id = ? ORDER BY id', [uid]);
+    const maxUploadKb = Number(await getAppSetting('max_upload_kb', 500));
+    res.json({
+      name: user.full_name,
+      email: user.email,
+      profiles,
+      displayPhotos: photos.filter(p => p.kind === 'display'),
+      albums: albums.map(al => ({
+        ...al,
+        photos: photos.filter(p => p.kind === 'gallery' && p.album_id === al.id),
+      })),
+      maxUploadKb,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.put('/api/profile/name', requireAuth, requireBody(['name']), async (req, res) => {
+  try {
+    const name = req.body.name.trim().slice(0, 120);
+    await pool.query('UPDATE users SET full_name = ? WHERE id = ?', [name, req.session.userId]);
+    await pool.query('UPDATE advisors SET name = ? WHERE user_id = ?', [name, req.session.userId]);
+    res.json({ ok: true, name });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+function cleanProfileFields(body) {
+  const title = String(body.title || '').trim().slice(0, 120);
+  const about = String(body.about || '').trim().slice(0, 2000);
+  let rate = Number(body.rate_per_min);
+  if (!(rate >= 0.25 && rate <= 999)) rate = 1.0;
+  return { title, about, rate };
+}
+
+app.post('/api/profile/categories', requireAuth, async (req, res) => {
+  try {
+    const uid = req.session.userId;
+    const categoryId = Number(req.body?.category_id);
+    const [[cat]] = await pool.query(`
+      SELECT c.id, c.name FROM categories c
+      LEFT JOIN categories k ON k.parent_id = c.id
+      WHERE c.id = ? AND k.id IS NULL`, [categoryId]);
+    if (!cat) return res.status(400).json({ error: 'Pick a valid (leaf) category.' });
+
+    const [dupe] = await pool.query(
+      'SELECT id FROM advisors WHERE user_id = ? AND category_id = ?', [uid, categoryId]);
+    if (dupe.length) return res.status(409).json({ error: `You already have a ${cat.name} profile.` });
+
+    const [[user]] = await pool.query('SELECT full_name FROM users WHERE id = ?', [uid]);
+    const { title, about, rate } = cleanProfileFields(req.body || {});
+    const [result] = await pool.query(
+      `INSERT INTO advisors (user_id, name, category_id, title, bio, about, rate_per_min, languages, is_online)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'English', 0)`,
+      [uid, user.full_name, categoryId, title || cat.name,
+       (about || 'New advisor on LetsTalkBuddy.').slice(0, 300), about || null, rate]);
+    res.status(201).json({ id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.put('/api/profile/categories/:id', requireAuth, async (req, res) => {
+  try {
+    const uid = req.session.userId;
+    const advisorId = Number(req.params.id);
+    const categoryId = Number(req.body?.category_id);
+    const [[cat]] = await pool.query(`
+      SELECT c.id, c.name FROM categories c
+      LEFT JOIN categories k ON k.parent_id = c.id
+      WHERE c.id = ? AND k.id IS NULL`, [categoryId]);
+    if (!cat) return res.status(400).json({ error: 'Pick a valid (leaf) category.' });
+    const [dupe] = await pool.query(
+      'SELECT id FROM advisors WHERE user_id = ? AND category_id = ? AND id <> ?', [uid, categoryId, advisorId]);
+    if (dupe.length) return res.status(409).json({ error: `You already have a ${cat.name} profile.` });
+
+    const { title, about, rate } = cleanProfileFields(req.body || {});
+    const [result] = await pool.query(
+      `UPDATE advisors SET category_id = ?, title = ?, about = ?, bio = ?, rate_per_min = ?
+       WHERE id = ? AND user_id = ?`,
+      [categoryId, title || cat.name, about || null,
+       (about || 'New advisor on LetsTalkBuddy.').slice(0, 300), rate, advisorId, uid]);
+    if (!result.affectedRows) return res.status(404).json({ error: 'Profile not found.' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.delete('/api/profile/categories/:id', requireAuth, async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      'DELETE FROM advisors WHERE id = ? AND user_id = ?', [Number(req.params.id), req.session.userId]);
+    if (!result.affectedRows) return res.status(404).json({ error: 'Profile not found.' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.post('/api/profile/albums', requireAuth, requireBody(['name']), async (req, res) => {
+  try {
+    const [result] = await pool.query('INSERT INTO albums (user_id, name) VALUES (?, ?)',
+      [req.session.userId, req.body.name.trim().slice(0, 80)]);
+    res.status(201).json({ id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.delete('/api/profile/albums/:id', requireAuth, async (req, res) => {
+  try {
+    const uid = req.session.userId;
+    const albumId = Number(req.params.id);
+    const [photos] = await pool.query(
+      'SELECT url FROM photos WHERE album_id = ? AND user_id = ?', [albumId, uid]);
+    const [result] = await pool.query(
+      'DELETE FROM albums WHERE id = ? AND user_id = ?', [albumId, uid]);
+    if (!result.affectedRows) return res.status(404).json({ error: 'Album not found.' });
+    for (const p of photos) {
+      fs.unlink(path.join(__dirname, 'public', p.url), () => {});
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.post('/api/profile/photos', requireAuth, upload.single('photo'), async (req, res) => {
+  try {
+    const uid = req.session.userId;
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+    const ext = IMAGE_TYPES[req.file.mimetype];
+    if (!ext) return res.status(400).json({ error: 'Only JPEG, PNG, WebP, or GIF images are allowed.' });
+
+    const maxKb = Number(await getAppSetting('max_upload_kb', 500));
+    if (req.file.size > maxKb * 1024) {
+      return res.status(400).json({ error: `Image is too large — the limit is ${maxKb} kB.` });
+    }
+
+    const kind = req.body.kind === 'display' ? 'display' : 'gallery';
+    let albumId = null;
+    if (kind === 'gallery') {
+      albumId = Number(req.body.album_id);
+      if (!Number.isInteger(albumId)) {
+        return res.status(400).json({ error: 'Create an album first, then upload into it.' });
+      }
+      const [[album]] = await pool.query(
+        'SELECT id FROM albums WHERE id = ? AND user_id = ?', [albumId, uid]);
+      if (!album) return res.status(400).json({ error: 'Create an album first, then upload into it.' });
+    }
+
+    const filename = `u${uid}-${crypto.randomUUID()}${ext}`;
+    fs.writeFileSync(path.join(UPLOADS_DIR, filename), req.file.buffer);
+    const url = '/uploads/' + filename;
+    const [result] = await pool.query(
+      'INSERT INTO photos (user_id, album_id, kind, url, size_bytes) VALUES (?, ?, ?, ?, ?)',
+      [uid, albumId, kind, url, req.file.size]);
+    res.status(201).json({ id: result.insertId, url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.delete('/api/profile/photos/:id', requireAuth, async (req, res) => {
+  try {
+    const uid = req.session.userId;
+    const [[photo]] = await pool.query(
+      'SELECT url FROM photos WHERE id = ? AND user_id = ?', [Number(req.params.id), uid]);
+    if (!photo) return res.status(404).json({ error: 'Photo not found.' });
+    await pool.query('DELETE FROM photos WHERE id = ? AND user_id = ?', [Number(req.params.id), uid]);
+    fs.unlink(path.join(__dirname, 'public', photo.url), () => {});
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong.' });

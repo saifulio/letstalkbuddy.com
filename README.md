@@ -52,7 +52,7 @@ an up-to-date database does nothing.
 | `public/signup.html`, `public/login.html` | Auth pages (bcrypt + sessions) |
 | `public/search.html` | Advisor search with live filters (category, price, language, rating, online) |
 | `public/profile.html` | Advisor profile: about, gallery, reviews, sticky booking sidebar |
-| `public/settings.html` | Settings → Availability: weekly hours per day, date overrides with calendar, booking preferences, dark mode |
+| `public/settings.html` | Settings shell: Availability (weekly hours, date overrides, preferences) + Profile (name, per-category advisor profiles, display pictures, photo albums), dark mode |
 | `availability.js` | Computes live online status from schedule rules and manual overrides |
 | `public/css/style.css`, `public/js/app.js` | Shared styles and helpers |
 | `public/LetsTalkBuddy.dc.html` | Original design comp (kept for reference; not used by the app) |
@@ -70,6 +70,10 @@ an up-to-date database does nothing.
 - `POST /api/availability/overrides`, `DELETE /api/availability/overrides/:date` — date-specific hours / unavailable days
 - `PUT /api/availability/settings` — buffers, limits, booking preferences, timezone
 - `POST`/`DELETE /api/availability/override` — go online/offline for N hours / resume schedule
+- `GET /api/profile` — name, per-category advisor profiles, display photos, albums (auth required)
+- `PUT /api/profile/name`; `POST`/`PUT`/`DELETE /api/profile/categories[/:id]` — one advisor profile per category
+- `POST /api/profile/albums`, `DELETE /api/profile/albums/:id`
+- `POST /api/profile/photos` (multipart; kind=display|gallery) — size limit from `app_settings.max_upload_kb` (default 500 kB); `DELETE /api/profile/photos/:id`
 
 ---
 
