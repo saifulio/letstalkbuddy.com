@@ -218,26 +218,62 @@
 
   /* Profile section */
   .text-input {
-    padding: 10px 13px; border-radius: 10px;
+    padding: 11px 14px; border-radius: 10px;
     border: 1.5px solid var(--border); background: var(--bg); color: var(--ink);
     font-size: 14px; font-weight: 500; width: 100%;
   }
-  textarea.text-input { resize: vertical; min-height: 84px; line-height: 1.5; }
-  .pf-cat {
-    border: 1px solid var(--border); border-radius: 14px;
-    padding: 16px; margin-bottom: 14px;
+  textarea.text-input { resize: vertical; min-height: 84px; line-height: 1.55; }
+  .pf-acc { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .pf-acc-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; cursor: pointer; background: var(--chip); gap: 14px;
   }
-  .pf-cat-grid { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 12px; margin-bottom: 12px; }
-  .pf-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .pf-acc-head .left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .pf-acc-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .pf-acc-head .cat { font-weight: 700; font-size: 14.5px; white-space: nowrap; }
+  .pf-acc-head .ttl { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pf-acc-head .right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .pf-acc-head .rate { font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .pf-acc-head .chev { color: var(--muted); transition: transform .15s; display: inline-block; }
+  .pf-acc.closed .chev { transform: rotate(-90deg); }
+  .pf-body { padding: 20px; }
+  .pf-grid2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; margin-bottom: 16px; }
+  .pricing-box {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; background: var(--chip); margin-bottom: 16px;
+  }
+  .pricing-box .pt { font-weight: 700; font-size: 13.5px; margin-bottom: 12px; }
+  .money-wrap {
+    display: flex; align-items: center; gap: 6px; padding: 0 14px;
+    border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg);
+  }
+  .money-wrap:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .money-wrap .cur { color: var(--muted); font-weight: 600; font-size: 14px; flex-shrink: 0; }
+  .money-wrap .unit { color: var(--muted); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .money-wrap input {
+    flex: 1; min-width: 0; padding: 11px 0; border: none; background: transparent;
+    color: var(--ink); font-size: 14px; font-weight: 600;
+  }
+  .money-wrap input:focus { outline: none; }
+  .pricing-err { font-size: 12.5px; font-weight: 600; color: #C23A20; margin-bottom: 6px; }
+  .pricing-sum { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .about-count { font-size: 12px; text-align: right; margin-top: 4px; color: var(--muted); }
+  .about-count.over { color: #C23A20; }
+  .btn-remove-cat {
+    padding: 9px 16px; border-radius: 9px;
+    border: 1.5px solid var(--border); background: transparent;
+    color: #C23A20; font-weight: 700; font-size: 13px; cursor: pointer;
+  }
   .pf-msg { font-size: 12.5px; font-weight: 600; }
   .pf-msg.ok { color: #1C7A46; }
   .pf-msg.err { color: #B0472C; }
   .photo-grid { display: flex; flex-wrap: wrap; gap: 12px; }
-  .photo-thumb { position: relative; width: 88px; height: 88px; }
+  .photo-thumb { position: relative; width: 96px; height: 96px; }
   .photo-thumb img {
     width: 100%; height: 100%; object-fit: cover;
     border-radius: 12px; border: 1px solid var(--border); display: block;
   }
+  .photo-thumb.round { width: 84px; height: 84px; }
   .photo-thumb.round img { border-radius: 50%; }
   .photo-thumb .rm {
     position: absolute; top: -6px; right: -6px;
@@ -246,16 +282,18 @@
     font-size: 11px; cursor: pointer; line-height: 1;
   }
   .upload-tile {
-    width: 88px; height: 88px; border-radius: 12px;
+    width: 96px; height: 96px; border-radius: 12px;
     border: 1.5px dashed var(--border); background: transparent;
     color: var(--muted); font-size: 24px; cursor: pointer;
   }
+  .upload-tile.round { width: 84px; height: 84px; border-radius: 50%; }
   .album-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
   .album-pill {
     display: flex; align-items: center; gap: 6px;
-    padding: 8px 12px; border-radius: 999px;
-    border: 1.5px solid var(--border); background: transparent;
+    padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--chip);
     font-size: 13px; font-weight: 700; cursor: pointer; color: var(--ink);
+    transition: all .15s;
   }
   .album-pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .album-pill .del { border: none; background: none; color: inherit; cursor: pointer; font-size: 12px; padding: 0; opacity: 0.7; }
@@ -270,6 +308,7 @@
     .page-header, .content { padding-left: 20px; padding-right: 20px; }
     .save-bar { left: 0; padding: 14px 20px; }
     .ov-grid { grid-template-columns: 1fr !important; }
+    .pf-grid2 { grid-template-columns: 1fr; }
     .day-row { flex-wrap: wrap; }
   }
 </style>
@@ -436,37 +475,35 @@
   <div class="content" id="section-profile" style="display:none">
 
     <div class="card" style="padding:24px;margin-bottom:24px">
-      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Name</h2>
-      <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Shared across all of your advisor profiles.</p>
-      <div style="display:flex;gap:10px;align-items:center;max-width:440px">
-        <input class="text-input" id="pf-name">
-        <button class="btn-save" style="padding:10px 18px;font-size:13.5px;flex-shrink:0" id="pf-name-save">Save</button>
-      </div>
-      <div class="pf-msg" id="pf-name-msg" style="margin-top:8px"></div>
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 4px">Name</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 16px">Shared across all of your advisor profiles.</p>
+      <input class="text-input" id="pf-name" style="max-width:380px">
     </div>
 
     <div class="card" style="padding:24px;margin-bottom:24px">
-      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Advisor categories</h2>
-      <p style="font-size:13.5px;color:var(--muted);margin:0 0 18px">One profile per category you advise in — each with its own title, rate, and about section.</p>
-      <div id="pf-cats"></div>
-      <button class="btn-accent-text" id="pf-cat-add">+ Add category profile</button>
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 4px">Advisor categories</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 20px">One profile per category you advise in — each with its own title, pricing, and about section.</p>
+      <div id="pf-cats" style="display:flex;flex-direction:column;gap:16px"></div>
+      <button class="btn-accent-text" id="pf-cat-add" style="font-size:13.5px;padding:14px 2px 0">+ Add category profile</button>
     </div>
 
     <div class="card" style="padding:24px;margin-bottom:24px">
-      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Display pictures</h2>
-      <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Shown as your profile photo. <span id="pf-limit-note"></span></p>
-      <div class="photo-grid" id="pf-display"></div>
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 4px">Display picture</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 16px">Shown as your profile photo everywhere on LetsTalkBuddy. <span id="pf-limit-note"></span></p>
+      <div class="photo-grid" id="pf-display" style="gap:14px"></div>
       <input type="file" id="pf-display-file" accept="image/*" style="display:none">
       <div class="pf-msg" id="pf-display-msg" style="margin-top:10px"></div>
     </div>
 
     <div class="card" style="padding:24px">
-      <h2 style="font-size:16px;font-weight:700;margin:0 0 6px">Gallery</h2>
-      <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">Organize photos into albums — clinic photos, credentials, past sessions, anything seekers should see.</p>
-      <div class="album-pills" id="pf-albums"></div>
-      <div style="display:flex;gap:8px;margin-bottom:16px;max-width:360px">
-        <input class="text-input" id="pf-album-name" placeholder="New album name">
-        <button class="btn-discard" style="padding:9px 14px;font-size:13px;flex-shrink:0" id="pf-album-add">Create</button>
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 4px">Gallery</h2>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 16px">Organize photos into albums — clinic photos, credentials, past sessions, anything seekers should see.</p>
+      <div class="album-pills">
+        <div id="pf-albums" style="display:contents"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="text-input" id="pf-album-name" placeholder="New album name" style="width:170px;padding:8px 12px;font-size:13px">
+          <button class="btn-discard" style="padding:9px 16px;font-size:13px;flex-shrink:0" id="pf-album-add">Create</button>
+        </div>
       </div>
       <div class="photo-grid" id="pf-gallery"></div>
       <input type="file" id="pf-gallery-file" accept="image/*" multiple style="display:none">
@@ -564,7 +601,7 @@ function setSection(name) {
   document.getElementById('section-availability').style.display = name === 'availability' ? '' : 'none';
   document.getElementById('section-profile').style.display = name === 'profile' ? '' : 'none';
   document.getElementById('page-title').textContent = SECTION_TITLES[name];
-  document.getElementById('save-bar').classList.toggle('show', name === 'availability' && state.dirty);
+  document.getElementById('save-bar').classList.toggle('show', name === 'availability' ? state.dirty : pf.dirty);
   if (name === 'profile' && !pf.loaded) loadProfileSection();
 }
 document.querySelectorAll('.nav-item[data-section]').forEach(el =>
@@ -851,19 +888,30 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Saving…';
   try {
-    await api('/api/availability/weekly', 'PUT', {
-      days: state.days.map((d, i) => ({ day: i, slots: d.enabled ? d.slots : [] })),
-    });
-    await api('/api/availability/settings', 'PUT', state.settings);
-    clearDirty();
-    refreshStatus();
+    if (currentSection === 'profile') {
+      await saveProfile();
+    } else {
+      await api('/api/availability/weekly', 'PUT', {
+        days: state.days.map((d, i) => ({ day: i, slots: d.enabled ? d.slots : [] })),
+      });
+      await api('/api/availability/settings', 'PUT', state.settings);
+      clearDirty();
+      refreshStatus();
+    }
   } catch (e) {
     alert(e.message);
   }
   btn.disabled = false;
   btn.textContent = 'Save changes';
 });
-document.getElementById('btn-discard').addEventListener('click', () => load());
+document.getElementById('btn-discard').addEventListener('click', async () => {
+  if (currentSection === 'profile') {
+    await reloadProfile(false);
+    pfClearDirty();
+  } else {
+    load();
+  }
+});
 
 /* ---------- initial load ---------- */
 async function load() {
@@ -892,12 +940,23 @@ async function load() {
 const pf = {
   loaded: false,
   leafCats: [],
+  name: '',
   profiles: [],      // saved + unsaved category profiles
   displayPhotos: [],
   albums: [],
   activeAlbum: null,
   maxUploadKb: 500,
+  dirty: false,
 };
+
+function pfMarkDirty() {
+  pf.dirty = true;
+  if (currentSection === 'profile') document.getElementById('save-bar').classList.add('show');
+}
+function pfClearDirty() {
+  pf.dirty = false;
+  if (currentSection === 'profile') document.getElementById('save-bar').classList.remove('show');
+}
 
 function escapeText(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -910,6 +969,29 @@ function pfMsg(id, text, ok) {
   if (ok) setTimeout(() => { el.textContent = ''; }, 2500);
 }
 
+function applyProfileData(profile, keepOpen) {
+  const openByCat = keepOpen ? new Map(pf.profiles.map(p => [p.category_id, p.open])) : null;
+  pf.name = profile.name;
+  pf.profiles = profile.profiles.map((p, i) => ({
+    ...p,
+    rate_per_min: Number(p.rate_per_min).toFixed(2),
+    intro_price: p.intro_price == null
+      ? (Number(p.rate_per_min) * 10).toFixed(2)
+      : Number(p.intro_price).toFixed(2),
+    about: p.about || '',
+    saved: true,
+    open: openByCat ? (openByCat.get(p.category_id) ?? false) : i === 0,
+  }));
+  pf.displayPhotos = profile.displayPhotos;
+  pf.albums = profile.albums;
+  pf.maxUploadKb = profile.maxUploadKb ?? pf.maxUploadKb;
+  if (!pf.albums.some(a => a.id === pf.activeAlbum)) pf.activeAlbum = pf.albums[0]?.id ?? null;
+  document.getElementById('pf-name').value = pf.name;
+  renderPfCats();
+  renderPfPhotos();
+  renderPfAlbums();
+}
+
 async function loadProfileSection() {
   pf.loaded = true;
   const [profile, cats] = await Promise.all([
@@ -918,86 +1000,147 @@ async function loadProfileSection() {
   ]);
   const parents = new Set(cats.categories.filter(c => c.parent_id).map(c => c.parent_id));
   pf.leafCats = cats.categories.filter(c => !parents.has(c.id));
-  pf.profiles = profile.profiles.map(p => ({ ...p, saved: true }));
-  pf.displayPhotos = profile.displayPhotos;
-  pf.albums = profile.albums;
-  pf.maxUploadKb = profile.maxUploadKb;
-  if (!pf.albums.some(a => a.id === pf.activeAlbum)) pf.activeAlbum = pf.albums[0]?.id ?? null;
-
-  document.getElementById('pf-name').value = profile.name;
+  applyProfileData(profile, false);
   document.getElementById('pf-limit-note').textContent = `Max image size: ${pf.maxUploadKb} kB.`;
-  renderPfCats();
-  renderPfPhotos();
-  renderPfAlbums();
 }
 
-async function reloadProfile() {
+async function reloadProfile(keepOpen = true) {
   const profile = await api('/api/profile');
-  pf.profiles = profile.profiles.map(p => ({ ...p, saved: true }));
-  pf.displayPhotos = profile.displayPhotos;
-  pf.albums = profile.albums;
-  if (!pf.albums.some(a => a.id === pf.activeAlbum)) pf.activeAlbum = pf.albums[0]?.id ?? null;
-  renderPfCats();
-  renderPfPhotos();
-  renderPfAlbums();
+  applyProfileData(profile, keepOpen);
 }
 
 /* ----- name ----- */
-document.getElementById('pf-name-save').addEventListener('click', async () => {
-  try {
-    const { name } = await api('/api/profile/name', 'PUT', { name: document.getElementById('pf-name').value });
-    document.getElementById('pf-name').value = name;
-    pfMsg('pf-name-msg', 'Saved.', true);
-  } catch (e) { pfMsg('pf-name-msg', e.message, false); }
-});
+document.getElementById('pf-name').addEventListener('input', pfMarkDirty);
 
 /* ----- category profiles ----- */
+function pricingInfo(p) {
+  const rate = parseFloat(p.rate_per_min) || 0;
+  const intro = parseFloat(p.intro_price) || 0;
+  const savings = rate * 10 - intro;
+  return {
+    error: intro > rate * 10 && rate > 0,
+    summary: rate > 0
+      ? `Seekers pay $${intro.toFixed(2)} for the first 10 minutes${savings > 0 ? ` (saving $${savings.toFixed(2)} vs. per-minute)` : ''}, then $${rate.toFixed(2)}/min after.`
+      : 'Set a per-minute rate to see what seekers will pay.',
+  };
+}
+
 function renderPfCats() {
   const box = document.getElementById('pf-cats');
-  box.innerHTML = pf.profiles.length ? pf.profiles.map((p, i) => `
-    <div class="pf-cat">
-      <div class="pf-cat-grid">
-        <div>
-          <label class="field-label">Category</label>
-          <select class="text-input" data-pf="cat:${i}">
-            ${pf.leafCats.map(c => `<option value="${c.id}" ${c.id === p.category_id ? 'selected' : ''}>${escapeText(c.name)}</option>`).join('')}
-          </select>
+  box.innerHTML = pf.profiles.length ? pf.profiles.map((p, i) => {
+    const info = pricingInfo(p);
+    const catName = pf.leafCats.find(c => c.id === p.category_id)?.name || p.category || '';
+    return `
+    <div class="pf-acc${p.open ? '' : ' closed'}" data-acc="${i}">
+      <div class="pf-acc-head" data-acc-head="${i}">
+        <div class="left">
+          <div class="dot"></div>
+          <span class="cat">${escapeText(catName)}</span>
+          <span class="ttl">${escapeText(p.title || '')}</span>
         </div>
-        <div>
-          <label class="field-label">Title</label>
-          <input class="text-input" data-pf="title:${i}" value="${escapeText(p.title)}" placeholder='e.g. "Medicine specialist"'>
-        </div>
-        <div>
-          <label class="field-label">Rate ($/min)</label>
-          <input class="text-input" data-pf="rate:${i}" type="number" step="0.25" min="0.25" value="${p.rate_per_min}">
+        <div class="right">
+          <span class="rate">$${(parseFloat(p.rate_per_min) || 0).toFixed(2)}/min</span>
+          <span class="chev">▾</span>
         </div>
       </div>
-      <label class="field-label">About</label>
-      <textarea class="text-input" data-pf="about:${i}" placeholder="Tell seekers about your experience in this category…">${escapeText(p.about || '')}</textarea>
-      <div class="pf-actions">
-        <button class="btn-save" style="padding:9px 16px;font-size:13px" data-pf-save="${i}">${p.saved ? 'Save changes' : 'Save profile'}</button>
-        <button class="btn-discard" style="padding:9px 16px;font-size:13px" data-pf-del="${i}">Remove</button>
-        <span class="pf-msg" id="pf-cat-msg-${i}"></span>
-      </div>
-    </div>`).join('')
-    : '<p style="font-size:13.5px;color:var(--muted);margin:0 0 12px">No category profiles yet — add your first one.</p>';
+      ${p.open ? `
+      <div class="pf-body">
+        <div class="pf-grid2">
+          <div style="min-width:0">
+            <label class="field-label">Category</label>
+            <select class="text-input" style="cursor:pointer" data-pf="cat:${i}">
+              ${pf.leafCats.map(c => `<option value="${c.id}" ${c.id === p.category_id ? 'selected' : ''}>${escapeText(c.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Title</label>
+            <input class="text-input" data-pf="title:${i}" value="${escapeText(p.title || '')}" placeholder="e.g. Internal Medicine Specialist">
+          </div>
+        </div>
 
-  box.querySelectorAll('[data-pf-save]').forEach(b =>
-    b.addEventListener('click', async () => {
-      const i = Number(b.dataset.pfSave);
-      const p = pf.profiles[i];
-      const body = {
-        category_id: Number(box.querySelector(`[data-pf="cat:${i}"]`).value),
-        title: box.querySelector(`[data-pf="title:${i}"]`).value,
-        rate_per_min: Number(box.querySelector(`[data-pf="rate:${i}"]`).value),
-        about: box.querySelector(`[data-pf="about:${i}"]`).value,
-      };
-      try {
-        if (p.saved) await api('/api/profile/categories/' + p.id, 'PUT', body);
-        else await api('/api/profile/categories', 'POST', body);
-        await reloadProfile();
-      } catch (e) { pfMsg(`pf-cat-msg-${i}`, e.message, false); }
+        <div class="pricing-box">
+          <div class="pt">Pricing</div>
+          <div class="pf-grid2" style="margin-bottom:10px">
+            <div style="min-width:0">
+              <label class="field-label">Per-minute rate</label>
+              <div class="money-wrap">
+                <span class="cur">$</span>
+                <input data-pf="rate:${i}" value="${escapeText(p.rate_per_min)}" inputmode="decimal">
+                <span class="unit">/min</span>
+              </div>
+            </div>
+            <div style="min-width:0">
+              <label class="field-label">First 10 minutes (flat)</label>
+              <div class="money-wrap">
+                <span class="cur">$</span>
+                <input data-pf="intro:${i}" value="${escapeText(p.intro_price)}" inputmode="decimal">
+                <span class="unit">/10 min</span>
+              </div>
+            </div>
+          </div>
+          <div class="pricing-err" data-pf-err="${i}" style="display:${info.error ? '' : 'none'}">⚠ Intro price is higher than 10 min at your per-minute rate — seekers would pay more upfront.</div>
+          <div class="pricing-sum" data-pf-sum="${i}">${info.summary}</div>
+        </div>
+
+        <div style="margin-bottom:18px">
+          <label class="field-label">About</label>
+          <textarea class="text-input" data-pf="about:${i}" rows="3" maxlength="300" placeholder="What can seekers expect from a session with you in this category?">${escapeText(p.about)}</textarea>
+          <div class="about-count${p.about.length > 280 ? ' over' : ''}" data-pf-count="${i}">${p.about.length}/300</div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn-remove-cat" data-pf-del="${i}">Remove category</button>
+        </div>
+      </div>` : ''}
+    </div>`;
+  }).join('')
+    : '<p style="font-size:13.5px;color:var(--muted);margin:0">No category profiles yet — add your first one.</p>';
+
+  box.querySelectorAll('[data-acc-head]').forEach(h =>
+    h.addEventListener('click', () => {
+      const p = pf.profiles[h.dataset.accHead];
+      p.open = !p.open;
+      renderPfCats();
     }));
+
+  box.querySelectorAll('[data-pf]').forEach(el => {
+    const [field, iStr] = el.dataset.pf.split(':');
+    const i = Number(iStr);
+    const p = pf.profiles[i];
+    const acc = box.querySelector(`[data-acc="${i}"]`);
+    const refreshPricing = () => {
+      const info = pricingInfo(p);
+      acc.querySelector(`[data-pf-err="${i}"]`).style.display = info.error ? '' : 'none';
+      acc.querySelector(`[data-pf-sum="${i}"]`).textContent = info.summary;
+    };
+    if (field === 'cat') {
+      el.addEventListener('change', () => {
+        p.category_id = Number(el.value);
+        acc.querySelector('.cat').textContent = el.options[el.selectedIndex].text;
+        pfMarkDirty();
+      });
+      return;
+    }
+    el.addEventListener('input', () => {
+      if (field === 'title') {
+        p.title = el.value;
+        acc.querySelector('.ttl').textContent = el.value;
+      } else if (field === 'rate') {
+        p.rate_per_min = el.value;
+        acc.querySelector('.rate').textContent = `$${(parseFloat(el.value) || 0).toFixed(2)}/min`;
+        refreshPricing();
+      } else if (field === 'intro') {
+        p.intro_price = el.value;
+        refreshPricing();
+      } else if (field === 'about') {
+        p.about = el.value;
+        const count = acc.querySelector(`[data-pf-count="${i}"]`);
+        count.textContent = `${el.value.length}/300`;
+        count.classList.toggle('over', el.value.length > 280);
+      }
+      pfMarkDirty();
+    });
+  });
 
   box.querySelectorAll('[data-pf-del]').forEach(b =>
     b.addEventListener('click', async () => {
@@ -1008,7 +1151,7 @@ function renderPfCats() {
       try {
         await api('/api/profile/categories/' + p.id, 'DELETE');
         await reloadProfile();
-      } catch (e) { pfMsg(`pf-cat-msg-${i}`, e.message, false); }
+      } catch (e) { alert(e.message); }
     }));
 }
 
@@ -1018,10 +1161,34 @@ document.getElementById('pf-cat-add').addEventListener('click', () => {
   pf.profiles.push({
     saved: false, id: null,
     category_id: firstFree ? firstFree.id : pf.leafCats[0].id,
-    title: '', about: '', rate_per_min: '1.00',
+    title: '', about: '', rate_per_min: '1.00', intro_price: '8.00', open: true,
   });
+  pfMarkDirty();
   renderPfCats();
 });
+
+/* ----- save / discard (sticky bar) ----- */
+async function saveProfile() {
+  const nameInput = document.getElementById('pf-name');
+  if (nameInput.value.trim() && nameInput.value !== pf.name) {
+    const { name } = await api('/api/profile/name', 'PUT', { name: nameInput.value });
+    document.getElementById('avatar-chip').textContent =
+      name.split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+  for (const p of pf.profiles) {
+    const body = {
+      category_id: p.category_id,
+      title: p.title,
+      rate_per_min: Number(p.rate_per_min),
+      intro_price: Number(p.intro_price),
+      about: p.about,
+    };
+    if (p.saved) await api('/api/profile/categories/' + p.id, 'PUT', body);
+    else await api('/api/profile/categories', 'POST', body);
+  }
+  await reloadProfile();
+  pfClearDirty();
+}
 
 /* ----- photos ----- */
 async function uploadPhotos(files, kind, msgId) {
@@ -1059,7 +1226,7 @@ function bindPhotoDeletes(container, msgId) {
 function renderPfPhotos() {
   const box = document.getElementById('pf-display');
   box.innerHTML = pf.displayPhotos.map(p => photoThumbHTML(p, true)).join('') +
-    '<button class="upload-tile" id="pf-display-upload" title="Add display picture" style="border-radius:50%">+</button>';
+    '<button class="upload-tile round" id="pf-display-upload" title="Add display picture">+</button>';
   document.getElementById('pf-display-upload').addEventListener('click', () =>
     document.getElementById('pf-display-file').click());
   bindPhotoDeletes(box, 'pf-display-msg');
@@ -1077,7 +1244,7 @@ function renderPfAlbums() {
       ${escapeText(a.name)} (${a.photos.length})
       <button class="del" data-album-del="${a.id}" title="Delete album">✕</button>
     </div>`).join('')
-    : '<span style="font-size:13.5px;color:var(--muted)">No albums yet — create one below to start uploading.</span>';
+    : '<span style="font-size:13.5px;color:var(--muted)">No albums yet — create one to start uploading.</span>';
 
   pills.querySelectorAll('[data-album]').forEach(el =>
     el.addEventListener('click', () => {

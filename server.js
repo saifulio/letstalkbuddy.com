@@ -287,7 +287,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     const uid = req.session.userId;
     const [[user]] = await pool.query('SELECT id, full_name, email FROM users WHERE id = ?', [uid]);
     const [profiles] = await pool.query(`
-      SELECT a.id, a.category_id, a.title, a.about, a.rate_per_min, c.name AS category
+      SELECT a.id, a.category_id, a.title, a.about, a.rate_per_min, a.intro_price, c.name AS category
       FROM advisors a JOIN categories c ON c.id = a.category_id
       WHERE a.user_id = ? ORDER BY a.id`, [uid]);
     const [albums] = await pool.query('SELECT id, name FROM albums WHERE user_id = ? ORDER BY id', [uid]);
@@ -328,7 +328,10 @@ function cleanProfileFields(body) {
   const about = String(body.about || '').trim().slice(0, 2000);
   let rate = Number(body.rate_per_min);
   if (!(rate >= 0.25 && rate <= 999)) rate = 1.0;
-  return { title, about, rate };
+  let intro = Number(body.intro_price);
+  if (!(intro >= 0.25 && intro <= 9999)) intro = rate * 10;
+  intro = Math.round(intro * 100) / 100;
+  return { title, about, rate, intro };
 }
 
 app.post('/api/profile/categories', requireAuth, async (req, res) => {
@@ -346,12 +349,12 @@ app.post('/api/profile/categories', requireAuth, async (req, res) => {
     if (dupe.length) return res.status(409).json({ error: `You already have a ${cat.name} profile.` });
 
     const [[user]] = await pool.query('SELECT full_name FROM users WHERE id = ?', [uid]);
-    const { title, about, rate } = cleanProfileFields(req.body || {});
+    const { title, about, rate, intro } = cleanProfileFields(req.body || {});
     const [result] = await pool.query(
-      `INSERT INTO advisors (user_id, name, category_id, title, bio, about, rate_per_min, languages, is_online)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'English', 0)`,
+      `INSERT INTO advisors (user_id, name, category_id, title, bio, about, rate_per_min, intro_price, languages, is_online)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'English', 0)`,
       [uid, user.full_name, categoryId, title || cat.name,
-       (about || 'New advisor on LetsTalkBuddy.').slice(0, 300), about || null, rate]);
+       (about || 'New advisor on LetsTalkBuddy.').slice(0, 300), about || null, rate, intro]);
     res.status(201).json({ id: result.insertId });
   } catch (err) {
     console.error(err);
@@ -373,12 +376,12 @@ app.put('/api/profile/categories/:id', requireAuth, async (req, res) => {
       'SELECT id FROM advisors WHERE user_id = ? AND category_id = ? AND id <> ?', [uid, categoryId, advisorId]);
     if (dupe.length) return res.status(409).json({ error: `You already have a ${cat.name} profile.` });
 
-    const { title, about, rate } = cleanProfileFields(req.body || {});
+    const { title, about, rate, intro } = cleanProfileFields(req.body || {});
     const [result] = await pool.query(
-      `UPDATE advisors SET category_id = ?, title = ?, about = ?, bio = ?, rate_per_min = ?
+      `UPDATE advisors SET category_id = ?, title = ?, about = ?, bio = ?, rate_per_min = ?, intro_price = ?
        WHERE id = ? AND user_id = ?`,
       [categoryId, title || cat.name, about || null,
-       (about || 'New advisor on LetsTalkBuddy.').slice(0, 300), rate, advisorId, uid]);
+       (about || 'New advisor on LetsTalkBuddy.').slice(0, 300), rate, intro, advisorId, uid]);
     if (!result.affectedRows) return res.status(404).json({ error: 'Profile not found.' });
     res.json({ ok: true });
   } catch (err) {
