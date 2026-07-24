@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "db:setup": "node scripts/setup-db.js",
+    "db:migrate": "node migrate.js",
     "db:add-data": "node scripts/add-advisors.js"
   },
   "dependencies": {

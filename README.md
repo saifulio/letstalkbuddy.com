@@ -9,18 +9,32 @@ A marketplace for paid, per-minute conversations — expert advice, mentorship, 
 ```bash
 npm install                # install dependencies
 cp .env.example .env       # then edit DB credentials if needed (defaults: root, no password)
-npm run db:setup           # creates the letstalkbuddy database, tables, and sample data
+npm run db:setup           # OPTIONAL full reset: rebuilds the database and loads sample data
 npm start                  # serves the app at http://localhost:3000
 ```
 
 Demo login: `demo@letstalkbuddy.com` / `password123`
 
-**Add more sample data** (random advisors):
+**Add more sample data** (random advisors + reviews):
 
 ```bash
 npm run db:add-data              # adds 20
 node scripts/add-advisors.js 50  # adds 50
 ```
+
+### Database migrations
+
+The schema is managed by date-ordered migrations in `migrations/` (e.g.
+`20260712-01-initial-schema.js`). A `migrations` table records every file that
+has run, so **each migration runs exactly once per database**: on a brand-new
+server the whole sequence runs automatically the first time you `npm start`;
+an up-to-date database does nothing.
+
+- `npm start` — pending migrations run automatically before the server listens
+- `npm run db:migrate` — run them manually
+- To add a schema change: drop a new `YYYYMMDD-NN-name.js` file in
+  `migrations/` exporting `async up(conn, helpers)`; it runs on next start.
+- `npm run db:setup` — destructive reset (drop DB → run all migrations → load sample data)
 
 ## Project layout
 
@@ -28,11 +42,11 @@ node scripts/add-advisors.js 50  # adds 50
 |---|---|
 | `server.js` | Express server: static files + REST API (auth, categories, advisor search) |
 | `db.js` | MySQL connection pool |
-| `db/schema.sql` | Database schema (users, categories, advisors, reviews) |
-| `db/seed.sql` | Demo user and 9 sample advisors |
+| `migrate.js` | Migration runner (auto-runs at server start; `npm run db:migrate`) |
+| `migrations/` | Date-ordered schema migrations, tracked in the `migrations` table |
+| `db/seed.sql` | Sample data: demo user and 9 sample advisors |
 | `scripts/taxonomy.js` | Hierarchical category tree (9 top-level groups, subcategories, sub-subcategories) |
-| `scripts/migrate-categories.js` | One-off migration from the old flat categories to the tree |
-| `scripts/setup-db.js` | Applies schema + seed |
+| `scripts/setup-db.js` | Destructive reset: drop DB, migrate, load sample data |
 | `scripts/add-advisors.js` | Generates random advisors |
 | `public/index.html` | Landing page (categories + featured advisors from the DB) |
 | `public/signup.html`, `public/login.html` | Auth pages (bcrypt + sessions) |
@@ -40,8 +54,6 @@ node scripts/add-advisors.js 50  # adds 50
 | `public/profile.html` | Advisor profile: about, gallery, reviews, sticky booking sidebar |
 | `public/settings.html` | Settings → Availability: weekly hours per day, date overrides with calendar, booking preferences, dark mode |
 | `availability.js` | Computes live online status from schedule rules and manual overrides |
-| `scripts/migrate-availability.js` | One-off migration adding availability tables/columns |
-| `scripts/migrate-profile.js` | One-off migration adding profile fields to an existing database |
 | `public/css/style.css`, `public/js/app.js` | Shared styles and helpers |
 | `public/LetsTalkBuddy.dc.html` | Original design comp (kept for reference; not used by the app) |
 

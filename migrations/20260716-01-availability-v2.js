@@ -1,15 +1,10 @@
-// One-off migration for the redesigned Settings -> Availability page:
-// adds date-override semantics and the user_settings table. Idempotent.
-// Usage: node scripts/migrate-availability-v2.js
-require('dotenv').config();
-const pool = require('../db');
+// Redesigned availability settings: date overrides can block a whole day,
+// plus per-user booking preferences.
+module.exports.up = async (conn, { addColumn }) => {
+  await addColumn(conn, 'availability_rules', 'unavailable',
+    'TINYINT(1) NOT NULL DEFAULT 0 AFTER end_minute');
 
-async function main() {
-  console.log('Adding unavailable flag to availability_rules...');
-  await pool.query('ALTER TABLE availability_rules ADD COLUMN IF NOT EXISTS unavailable TINYINT(1) NOT NULL DEFAULT 0 AFTER end_minute');
-
-  console.log('Creating user_settings table...');
-  await pool.query(`
+  await conn.query(`
     CREATE TABLE IF NOT EXISTS user_settings (
       user_id              INT UNSIGNED PRIMARY KEY,
       timezone             VARCHAR(64) NOT NULL DEFAULT 'GMT+6 · Dhaka',
@@ -22,12 +17,4 @@ async function main() {
       reschedule_notice    TINYINT(1) NOT NULL DEFAULT 0,
       CONSTRAINT fk_settings_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB`);
-
-  console.log('Done.');
-  await pool.end();
-}
-
-main().catch((err) => {
-  console.error('Migration failed:', err.message);
-  process.exit(1);
-});
+};

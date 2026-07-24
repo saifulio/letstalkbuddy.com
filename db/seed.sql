@@ -1,7 +1,6 @@
--- Sample data for LetsTalkBuddy.
--- NOTE: categories are seeded from scripts/taxonomy.js (hierarchical tree)
--- by setup-db.js BEFORE this file runs; advisors reference them by name.
-USE letstalkbuddy;
+-- Sample data for LetsTalkBuddy (loaded by scripts/setup-db.js AFTER the
+-- migration sequence has built the schema and category taxonomy; advisors
+-- reference categories by name).
 
 -- Demo user: demo@letstalkbuddy.com / password123 (bcrypt hash)
 INSERT INTO users (full_name, email, password_hash, role) VALUES

@@ -5,6 +5,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const pool = require('./db');
 const { computeStatus } = require('./availability');
+const { runMigrations } = require('./migrate');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -464,6 +465,14 @@ app.delete('/api/availability/override', requireAuth, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`LetsTalkBuddy running at http://localhost:${PORT}`);
-});
+// Apply any pending database migrations before accepting traffic.
+runMigrations()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`LetsTalkBuddy running at http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Could not start: database migration failed:', err.message);
+    process.exit(1);
+  });

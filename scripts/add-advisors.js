@@ -53,15 +53,37 @@ async function main() {
     ]);
   }
 
-  await pool.query(
+  const [result] = await pool.query(
     `INSERT INTO advisors
        (name, category_id, title, bio, about, sessions_completed, rating, reviews_count, response_minutes, rate_per_min, languages, is_online)
      VALUES ?`,
     [rows]
   );
 
+  // A few sample reviews for each new advisor.
+  const AUTHORS = ['Nusrat H.', 'Omar T.', 'Sadia K.', 'Daniel R.', 'Farhan M.', 'Anika B.', 'Rafiq I.', 'Maria G.', 'Anonymous'];
+  const TEXTS = {
+    5: ['Absolutely worth every minute. Clear, kind, and genuinely helpful.',
+        'Connected within seconds and gave me exactly the guidance I needed.',
+        'One call saved me weeks of second-guessing. Highly recommended.'],
+    4: ['Very helpful session. A little rushed at the end, but solid advice.',
+        'Knows the subject well. Would have liked more concrete next steps.'],
+  };
+  const reviewRows = [];
+  for (let i = 0; i < count; i++) {
+    const advisorId = result.insertId + i;
+    const n = 2 + Math.floor(Math.random() * 4);
+    for (let j = 0; j < n; j++) {
+      const stars = Math.random() < 0.8 ? 5 : 4;
+      reviewRows.push([advisorId, pick(AUTHORS), stars, pick(TEXTS[stars]),
+        new Date(Date.now() - Math.floor(rand(0, 90)) * 86400000)]);
+    }
+  }
+  await pool.query(
+    'INSERT INTO reviews (advisor_id, author_name, rating, comment, created_at) VALUES ?', [reviewRows]);
+
   const [[{ n }]] = await pool.query('SELECT COUNT(*) AS n FROM advisors');
-  console.log(`Added ${count} advisors. Total advisors: ${n}.`);
+  console.log(`Added ${count} advisors (with ${reviewRows.length} reviews). Total advisors: ${n}.`);
   await pool.end();
 }
 
